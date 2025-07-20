@@ -1,5 +1,5 @@
 
 [loot]
 	#List of entity IDs that should trigger loot voting (example: minecraft:warden)
-	loot_entities = ["minecraft:warden", "minecraft:pig"]
+	loot_entities = ["minecraft:warden", "minecraft:pig", "undergarden:forgotten_guardian", "mowziesmobs:ferrous_wroughtnaut", "mowziesmobs:frostmaw", "mowziesmobs:umvuthi", "mowziesmobs:sculptor", "legendary_monsters:posessed_paladin", "legendary_monsters:frostbitten_golem", "legendary_monsters:cloud_golem", "legendary_monsters:dune_sentinel", "legendary_monsters:skeletosaurus", "legendary_monsters:withered_abomination", "legendary_monsters:lava_eater", "legendary_monsters:overgrown_colossus", "legendary_monsters:shulker_mimic", "legendary_monsters:endersent", "bosses_of_mass_destruction:lich", "bosses_of_mass_destruction:void_blossom", "bosses_of_mass_destruction:obsidilith", "aquamirae:captain_cornelia", "aquamirae:eel", "aquamirae:maze_mother", "alexscaves:luxtructosaurus"]
 

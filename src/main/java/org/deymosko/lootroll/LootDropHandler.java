@@ -22,6 +22,7 @@ import org.deymosko.lootroll.events.VoteSession;
 import org.deymosko.lootroll.network.Packets;
 import org.deymosko.lootroll.network.s2c.VoteStartS2CPacket;
 
+import java.util.Collections;
 import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Lootroll.MODID)
@@ -60,7 +61,7 @@ public class LootDropHandler {
         LootParams lootParams = new LootParams.Builder(serverLevel)
                 .withParameter(LootContextParams.THIS_ENTITY, entity)
                 .withParameter(LootContextParams.DAMAGE_SOURCE, event.getSource())
-                .withParameter(LootContextParams.ORIGIN, entity.position()) // ← ОБОВ’ЯЗКОВИЙ параметр
+                .withParameter(LootContextParams.ORIGIN, entity.position())
                 .create(LootContextParamSets.ENTITY);
 
 
@@ -68,16 +69,17 @@ public class LootDropHandler {
         List<ItemStack> loot = lootTable.getRandomItems(lootParams);
 
         if (loot.isEmpty()) return;
-
-        VoteSession session = new VoteSession(loot, serverPlayers, 30);
-        VoteManager.addSession(session);
+        for(int i = 0; i < loot.size(); i++)
+        {
+            List<ItemStack> items = Collections.singletonList(loot.get(i));
+            VoteSession session = new VoteSession(items, serverPlayers, 30);
+            VoteManager.addSession(session);
+            for (ServerPlayer p : serverPlayers) {
+                Packets.sendToClient(new VoteStartS2CPacket(session.getId(), items, session.getEndTime()), p);
+            }
+        }
         Lootroll.LOGGER.info("Почато голосування за {} предметів, учасників: {}", loot.size(), serverPlayers.size());
 
-        for (ServerPlayer p : serverPlayers) {
-            Lootroll.LOGGER.info("→ Поблизу гравець: {}", p.getName().getString());
-            // Потрібно оновити VoteStartS2CPacket, щоб він міг передавати список ItemStack
-            Packets.sendToClient(new VoteStartS2CPacket(session.getId(), loot, session.getEndTime()), p);
-        }
 
 
 
