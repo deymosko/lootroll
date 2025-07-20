@@ -68,28 +68,62 @@ public class VoteManager {
                         .map(VoteManager::toItemComponent)
                         .toList());
 
+                List<UUID> needers = session.getVotes().entrySet().stream()
+                        .filter(e -> e.getValue() == VoteType.NEED)
+                        .map(Map.Entry::getKey)
+                        .toList();
+                List<UUID> greeders = session.getVotes().entrySet().stream()
+                        .filter(e -> e.getValue() == VoteType.GREED)
+                        .map(Map.Entry::getKey)
+                        .toList();
+                VoteType displayType;
+                List<UUID> displayGroup;
+                if (!needers.isEmpty()) {
+                    displayType = VoteType.NEED;
+                    displayGroup = needers;
+                } else if (!greeders.isEmpty()) {
+                    displayType = VoteType.GREED;
+                    displayGroup = greeders;
+                } else {
+                    displayType = VoteType.PASS;
+                    displayGroup = session.getVotes().entrySet().stream()
+                            .filter(e -> e.getValue() == VoteType.PASS)
+                            .map(Map.Entry::getKey)
+                            .toList();
+                }
+
                 for (ServerPlayer p : session.getParticipants()) {
                     p.sendSystemMessage(Component.translatable("lootroll.vote.result", itemsComponent)
                             .withStyle(ChatFormatting.GREEN));
-                    session.getVotes().forEach((id, vote) -> {
-                        int roll = session.getRolls().getOrDefault(id, 0);
-                        String name = session.getParticipants().stream()
-                                .filter(sp -> sp.getUUID().equals(id))
-                                .findFirst()
-                                .map(sp -> sp.getName().getString())
-                                .orElse(id.toString());
-                        p.sendSystemMessage(Component.translatable("lootroll.vote.entry", name, vote, roll)
+                    if (displayType == VoteType.PASS) {
+                        p.sendSystemMessage(Component.translatable("lootroll.vote.unwanted", itemsComponent)
                                 .withStyle(ChatFormatting.GREEN));
-                    });
-                    winnerOpt.ifPresent(win -> {
-                        String winnerName = session.getParticipants().stream()
-                                .filter(sp -> sp.getUUID().equals(win))
-                                .findFirst()
-                                .map(sp -> sp.getName().getString())
-                                .orElse(win.toString());
-                        p.sendSystemMessage(Component.translatable("lootroll.vote.winner", winnerName)
-                                .withStyle(ChatFormatting.GREEN));
-                    });
+                    } else {
+                        for (UUID id : displayGroup) {
+                            int roll = session.getRolls().getOrDefault(id, 0);
+                            String name = session.getParticipants().stream()
+                                    .filter(sp -> sp.getUUID().equals(id))
+                                    .findFirst()
+                                    .map(sp -> sp.getName().getString())
+                                    .orElse(id.toString());
+
+                            Component nameComp = Component.literal(name).withStyle(ChatFormatting.YELLOW);
+                            Component voteComp = Component.literal(displayType.toString()).withStyle(ChatFormatting.RED);
+                            Component rollComp = Component.literal(String.valueOf(roll)).withStyle(ChatFormatting.AQUA);
+
+                            p.sendSystemMessage(Component.translatable("lootroll.vote.entry", nameComp, voteComp, rollComp)
+                                    .withStyle(ChatFormatting.GREEN));
+                        }
+                        winnerOpt.ifPresent(win -> {
+                            String winnerName = session.getParticipants().stream()
+                                    .filter(sp -> sp.getUUID().equals(win))
+                                    .findFirst()
+                                    .map(sp -> sp.getName().getString())
+                                    .orElse(win.toString());
+                            p.sendSystemMessage(Component.translatable("lootroll.vote.winner", Component.literal(winnerName).withStyle(ChatFormatting.YELLOW))
+                                    .withStyle(ChatFormatting.GREEN));
+                        });
+                    }
                 }
             }
         }
