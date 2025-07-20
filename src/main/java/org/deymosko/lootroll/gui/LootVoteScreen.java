@@ -39,6 +39,7 @@ public class LootVoteScreen extends Screen {
     }
 
     private void layoutEntries() {
+        clearWidgets();
         int centerX = width / 2 - 80;
         int centerY = height / 2;
         int startY = centerY+20;

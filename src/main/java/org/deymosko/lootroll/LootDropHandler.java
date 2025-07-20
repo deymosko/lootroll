@@ -60,7 +60,7 @@ public class LootDropHandler {
                 .toList();
         LootParams lootParams = new LootParams.Builder(serverLevel)
                 .withParameter(LootContextParams.THIS_ENTITY, entity)
-                .withParameter(LootContextParams.DAMAGE_SOURCE, event.getSource())
+                .withOptionalParameter(LootContextParams.DAMAGE_SOURCE, event.getSource())
                 .withParameter(LootContextParams.ORIGIN, entity.position())
                 .create(LootContextParamSets.ENTITY);
 
