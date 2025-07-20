@@ -91,7 +91,7 @@ public class VoteUIEntry {
         if (mouseX >= itemX && mouseX <= itemX + 16 && mouseY >= itemY && mouseY <= itemY + 16) {
             gui.renderTooltip(font, stack, mouseX, mouseY);
         }
-        LootVoteScreen.drawScaledString(gui, font, stack.getDisplayName().getString(), x + 33, y + 9, 0.4f, 0xFFFFFF);
+        LootVoteScreen.drawScaledString(gui, font, stack.getDisplayName().getString(), x + 33, y + 9, 1.0f, 0xFFFFFF);
         float progress = timerTicks / 600.0f;
         drawProgressBar(gui, progress, x + 6, y + 33, 104, 5, 0xFFB2CA5D);
     }

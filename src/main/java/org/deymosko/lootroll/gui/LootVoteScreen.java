@@ -39,9 +39,9 @@ public class LootVoteScreen extends Screen {
     }
 
     private void layoutEntries() {
-        clearWidgets();
         int centerX = width / 2 - 80;
-        int startY = 20;
+        int centerY = height / 2;
+        int startY = centerY+20;
         int offset = 50;
         for (int i = 0; i < entries.size(); i++) {
             VoteUIEntry entry = entries.get(i);
@@ -102,4 +102,5 @@ public class LootVoteScreen extends Screen {
         guiGraphics.drawString(font, text, scaledX, scaledY, color, false);
         pose.popPose();
     }
+
 }

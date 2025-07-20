@@ -1,4 +1,11 @@
 {
   "player.roll.result": "§e§l%1$s rolls %2$d (%3$d-%4$d)",
-  "key.lootroll.open_vote_menu": "Open Loot Vote Menu"
-}
+  "key.lootroll.open_vote_menu": "Open Loot Vote Menu",
+  "lootroll.vote.result": "Vote results for lot: %s",
+  "lootroll.vote.entry": " - %s %s (%s)",
+  "lootroll.vote.winner": "Winner: %s",
+  "lootroll.vote.won": "🎉 You won the lot!",
+  "lootroll.vote.pass": "%s passes on %s",
+  "lootroll.vote.roll": "%s rolls %s for %s (%s)",
+  "lootroll.vote.already_voted": "You have already voted"
+ }

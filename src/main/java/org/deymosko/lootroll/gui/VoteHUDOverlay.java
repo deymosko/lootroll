@@ -3,9 +3,11 @@ package org.deymosko.lootroll.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
@@ -20,36 +22,39 @@ public class VoteHUDOverlay{
     public static final IGuiOverlay HUD_WARN = ((gui, guiGraphics, partialTick, screenWidth, screenHeight) -> {
         Minecraft mc = Minecraft.getInstance();
 
-//        if (mc.player == null) {
-//            Lootroll.LOGGER.warn("HUD not rendered: player is null");
-//            return;
-//        }
-//
-//        if (mc.level == null) {
-//            Lootroll.LOGGER.warn("HUD not rendered: level is null");
-//            return;
-//        }
-//
-//        if (mc.screen != null) {
-//            Lootroll.LOGGER.info("HUD not rendered: screen is open ({})", mc.screen.getClass().getSimpleName());
-//            return;
-//        }
-//
-        if (!ClientVoteCache.hasVote()) {
-           // Lootroll.LOGGER.info("HUD not rendered: no active vote");
-            return;
-        }
+        if (!ClientVoteCache.hasVote()) return;
 
-        Lootroll.LOGGER.info("Rendering loot vote HUD");
+        int x = screenWidth - 96;
+        int y = 0;
 
-        int x = screenWidth - 160;
-        int y = 10;
+        long ticks = mc.level.getGameTime();
+        int frame = (int)((ticks / 10) % 2);
 
-        //guiGraphics.blit(GuiTextures.LOOTFRAME, x - 10, y - 5, 0, 0, 160, 32, 160, 32);
+        ResourceLocation texture = (frame == 0)
+                ? GuiTextures.LOOTALERT_0
+                : GuiTextures.LOOTALERT_1;
 
-        guiGraphics.drawString(mc.font, "📦 Active loot vote", x, y, 0xFFFF55, false);
-        guiGraphics.drawString(mc.font, "Press [G] to vote", x, y + 10, 0xFFFFFF, false);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, texture);
+
+        guiGraphics.blit(texture, x, y, 0, 0, 96, 32, 96, 32);
+
+        drawScaledString(guiGraphics, mc.font, "📦 Active loot vote", x+15, y+6, 0.5f, 0xFFFF55);
+        drawScaledString(guiGraphics, mc.font, "Press [G] to vote", x+15, y+16, 0.5f, 0xFFFF55);
     });
+
+    public static void drawScaledString(GuiGraphics guiGraphics, Font font, String text, float screenX, float screenY, float scale, int color) {
+        var pose = guiGraphics.pose();
+        pose.pushPose();
+        float scaledX = screenX / scale;
+        float scaledY = screenY / scale;
+        pose.scale(scale, scale, 1.0f);
+        guiGraphics.drawString(font, text, scaledX, scaledY, color, false);
+        pose.popPose();
+    }
+
+
 
 }
 
