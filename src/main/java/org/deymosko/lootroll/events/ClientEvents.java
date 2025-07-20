@@ -1,9 +1,9 @@
 package org.deymosko.lootroll.events;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -24,10 +24,13 @@ public class ClientEvents {
         Keybinds.registerKeys(event);
     }
 
-    @SubscribeEvent
-    public static void onRegisterOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll("loot_vote", (guiGraphics, partialTick, width, height) -> {
-            VoteHUDOverlay.render(guiGraphics);
-        });
+
+    @Mod.EventBusSubscriber(modid = Lootroll.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ClientModBusEvents
+    {
+        @SubscribeEvent
+        public static void onRegisterOverlays(RegisterGuiOverlaysEvent event) {
+            event.registerAboveAll("loot_vote", VoteHUDOverlay.HUD_WARN);
+        }
     }
 }

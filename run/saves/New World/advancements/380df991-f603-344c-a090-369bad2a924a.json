@@ -9,7 +9,8 @@
     "criteria": {
       "minecraft:taiga": "2025-07-20 12:59:22 +0200",
       "minecraft:snowy_taiga": "2025-07-20 12:59:05 +0200",
-      "minecraft:frozen_ocean": "2025-07-20 13:07:56 +0200"
+      "minecraft:frozen_ocean": "2025-07-20 13:07:56 +0200",
+      "minecraft:windswept_forest": "2025-07-20 16:23:07 +0200"
     },
     "done": false
   },
@@ -82,6 +83,24 @@
   "minecraft:adventure/root": {
     "criteria": {
       "killed_something": "2025-07-20 14:27:20 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/food/cooked_porkchop": {
+    "criteria": {
+      "has_porkchop": "2025-07-20 16:42:22 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/food/cooked_porkchop_from_campfire_cooking": {
+    "criteria": {
+      "has_porkchop": "2025-07-20 16:42:22 +0200"
+    },
+    "done": true
+  },
+  "minecraft:recipes/food/cooked_porkchop_from_smoking": {
+    "criteria": {
+      "has_porkchop": "2025-07-20 16:42:22 +0200"
     },
     "done": true
   },

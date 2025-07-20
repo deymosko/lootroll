@@ -52,7 +52,7 @@ public class Lootroll {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "lootroll";
     // Directly reference a slf4j logger
-    static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public Lootroll()
     {
@@ -87,13 +87,18 @@ public class Lootroll {
 
         ServerLevel serverLevel = (ServerLevel) level;
         List<ServerPlayer> serverPlayers = new ArrayList<>();
-        for (Player p : level.getNearbyPlayers(TargetingConditions.forNonCombat(), entity, entity.getBoundingBox().inflate(100.0d))) {
+        TargetingConditions conditions = TargetingConditions.DEFAULT;
+        for (Player p : level.getNearbyPlayers(conditions, entity, entity.getBoundingBox().inflate(100.0d))) {
             if (p instanceof ServerPlayer sp) {
                 serverPlayers.add(sp);
             }
         }
 
-        if (serverPlayers.isEmpty()) return;
+        if (serverPlayers.isEmpty())
+        {
+            System.out.println("No players found");
+            return;
+        }
 
         // Тимчасово генеруємо один предмет як тест
         ItemStack testItem = new ItemStack(Items.DIAMOND_SWORD); // Потім замінимо на лут із loot table
