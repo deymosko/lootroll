@@ -6,35 +6,36 @@ import java.util.*;
 
 public class ClientVoteCache {
 
-    private static final Set<UUID> pendingVotes = new HashSet<>();
-    private static ItemStack activeVote = ItemStack.EMPTY;
+    private static final Map<UUID, ItemStack> voteQueue = new LinkedHashMap<>();
 
 
-    public static void add(UUID id) {
-        pendingVotes.add(id);
+    public static void add(UUID id, ItemStack item) {
+        voteQueue.putIfAbsent(id, item.copy());
     }
 
     public static void remove(UUID id) {
-        pendingVotes.remove(id);
+        voteQueue.remove(id);
     }
     public static Set<UUID> getPendingVotes() {
-        return Collections.unmodifiableSet(pendingVotes);
-    }
-
-    public static void addVote(ItemStack item) {
-        activeVote = item;
+        return Collections.unmodifiableSet(voteQueue.keySet());
     }
 
     public static boolean hasVote() {
-        return !activeVote.isEmpty();
+        return !voteQueue.isEmpty();
     }
 
-    public static ItemStack getVote() {
-        return activeVote;
+    public static ItemStack getCurrentItem() {
+        return voteQueue.isEmpty() ? ItemStack.EMPTY : voteQueue.values().iterator().next();
     }
 
-    public static void clear() {
-        activeVote = ItemStack.EMPTY;
+    public static UUID getCurrentId() {
+        return voteQueue.isEmpty() ? null : voteQueue.keySet().iterator().next();
+    }
+
+    public static void poll() {
+        if (!voteQueue.isEmpty()) {
+            voteQueue.remove(getCurrentId());
+        }
     }
 
 }

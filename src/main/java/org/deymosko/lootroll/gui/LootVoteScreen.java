@@ -6,14 +6,22 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import org.deymosko.lootroll.ClientVoteCache;
+import org.deymosko.lootroll.enums.VoteType;
+import org.deymosko.lootroll.network.Packets;
+import org.deymosko.lootroll.network.c2s.VoteC2SPacket;
+
+import java.util.UUID;
 
 public class LootVoteScreen extends Screen {
     private final ItemStack itemStack;
+    private final UUID voteId;
     private int timerTicks = 600; // 30 секунд при 20 тік/сек
     private Button needButton, greedButton, passButton;
 
-    public LootVoteScreen(ItemStack item) {
+    public LootVoteScreen(UUID voteId, ItemStack item) {
         super(Component.literal("Loot Vote"));
+        this.voteId = voteId;
         this.itemStack = item;
     }
 
@@ -62,7 +70,14 @@ public class LootVoteScreen extends Screen {
     }
 
     private void vote(String type) {
-        // TODO: Надіслати на сервер
+        VoteType voteType = switch (type) {
+            case "need" -> VoteType.NEED;
+            case "greed" -> VoteType.GREED;
+            default -> VoteType.PASS;
+        };
+
+        Packets.sendToServer(new VoteC2SPacket(voteId, voteType));
+        ClientVoteCache.poll();
         minecraft.setScreen(null); // Закриває екран
     }
 

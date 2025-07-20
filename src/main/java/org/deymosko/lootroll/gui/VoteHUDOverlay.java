@@ -1,12 +1,9 @@
 package org.deymosko.lootroll.gui;
 
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.deymosko.lootroll.ClientVoteCache;
 
 
@@ -16,7 +13,7 @@ public class VoteHUDOverlay {
 
     public static void render(GuiGraphics gui) {
         if (mc.player == null || mc.level == null) return;
-        if (ClientVoteCache.getPendingVotes().isEmpty()) return;
+        if (!ClientVoteCache.hasVote()) return;
 
         int x = mc.getWindow().getGuiScaledWidth() - 160;
         int y = 10;

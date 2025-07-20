@@ -1,5 +1,8 @@
 package org.deymosko.lootroll.events;
 
+import net.minecraft.server.level.ServerPlayer;
+import org.deymosko.lootroll.enums.VoteType;
+
 import java.util.*;
 
 public class VoteManager {
@@ -28,5 +31,12 @@ public class VoteManager {
 
     public static Optional<VoteSession> get(UUID id) {
         return Optional.ofNullable(activeVotes.get(id));
+    }
+
+    public static void vote(UUID sessionId, ServerPlayer player, VoteType type) {
+        VoteSession session = activeVotes.get(sessionId);
+        if (session != null) {
+            session.vote(player.getUUID(), type);
+        }
     }
 }
