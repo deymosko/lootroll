@@ -20,14 +20,17 @@ import java.util.UUID;
 public class LootVoteScreen extends Screen {
     private final ItemStack itemStack;
     private final UUID voteId;
-    private int timerTicks = 600; // 30 секунд при 20 тік/сек
+    private final long endTime;
+    private int timerTicks;
     private HoverableImageButton needButton, greedButton, passButton;
     private VoteSession session;
 
-    public LootVoteScreen(UUID voteId, ItemStack item) {
+    public LootVoteScreen(UUID voteId, ItemStack item, long endTime) {
         super(Component.literal("Loot Vote"));
         this.voteId = voteId;
         this.itemStack = item;
+        this.endTime = endTime;
+        this.timerTicks = (int) Math.ceil(Math.max(0, endTime - System.currentTimeMillis()) / 50.0);
     }
 
     @Override
@@ -87,7 +90,7 @@ public class LootVoteScreen extends Screen {
 
 
         // Таймер
-        gui.drawString(this.font, "Time left: " + (timerTicks / 20), centerX - 30, centerY - 35, 0xFFFFFF);
+        gui.drawString(this.font, "Time left: " + (int)Math.ceil(Math.max(0, endTime - System.currentTimeMillis()) / 1000.0), centerX - 30, centerY - 35, 0xFFFFFF);
 
         super.render(gui, mouseX, mouseY, partialTick);
     }
@@ -109,7 +112,8 @@ public class LootVoteScreen extends Screen {
 
     @Override
     public void tick() {
-        if (--timerTicks <= 0) {
+        timerTicks = (int) Math.ceil(Math.max(0, endTime - System.currentTimeMillis()) / 50.0);
+        if (timerTicks <= 0) {
             onTimeout();
         }
     }

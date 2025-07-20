@@ -6,11 +6,13 @@ import java.util.*;
 
 public class ClientVoteCache {
 
-    private static final Map<UUID, ItemStack> voteQueue = new LinkedHashMap<>();
+    public record VoteData(ItemStack item, long endTime) {}
+
+    private static final Map<UUID, VoteData> voteQueue = new LinkedHashMap<>();
 
 
-    public static void add(UUID id, ItemStack item) {
-        voteQueue.putIfAbsent(id, item.copy());
+    public static void add(UUID id, ItemStack item, long endTime) {
+        voteQueue.putIfAbsent(id, new VoteData(item.copy(), endTime));
     }
 
     public static void remove(UUID id) {
@@ -25,11 +27,15 @@ public class ClientVoteCache {
     }
 
     public static ItemStack getCurrentItem() {
-        return voteQueue.isEmpty() ? ItemStack.EMPTY : voteQueue.values().iterator().next();
+        return voteQueue.isEmpty() ? ItemStack.EMPTY : voteQueue.values().iterator().next().item();
     }
 
     public static UUID getCurrentId() {
         return voteQueue.isEmpty() ? null : voteQueue.keySet().iterator().next();
+    }
+
+    public static long getCurrentEndTime() {
+        return voteQueue.isEmpty() ? System.currentTimeMillis() : voteQueue.values().iterator().next().endTime();
     }
 
     public static void poll() {

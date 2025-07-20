@@ -60,7 +60,7 @@ public class LootDropHandler {
 
         for (ServerPlayer p : serverPlayers) {
             Lootroll.LOGGER.info("→ Поблизу гравець: {}", p.getName().getString());
-            Packets.sendToClient(new VoteStartS2CPacket(session.getId(), testItem), p);
+            Packets.sendToClient(new VoteStartS2CPacket(session.getId(), testItem, session.getEndTime()), p);
         }
     }
 }
