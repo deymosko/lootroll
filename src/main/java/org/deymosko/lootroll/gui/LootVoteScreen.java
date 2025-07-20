@@ -80,21 +80,6 @@ public class LootVoteScreen extends Screen {
         for (VoteUIEntry e : expired) {
             vote(e.getVoteId(), VoteType.PASS);
         }
-
-        // Reload entries if client vote cache changed while the screen is open
-        boolean changed = entries.size() != ClientVoteCache.getPendingVotes().size();
-        if (!changed) {
-            for (UUID id : ClientVoteCache.getPendingVotes()) {
-                boolean present = entries.stream().anyMatch(e -> e.getVoteId().equals(id));
-                if (!present) {
-                    changed = true;
-                    break;
-                }
-            }
-        }
-        if (changed) {
-            reloadEntries();
-        }
     }
 
     public void vote(UUID id, VoteType type) {
@@ -117,5 +102,4 @@ public class LootVoteScreen extends Screen {
         guiGraphics.drawString(font, text, scaledX, scaledY, color, false);
         pose.popPose();
     }
-
 }
