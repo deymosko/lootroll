@@ -3,6 +3,7 @@ package org.deymosko.lootroll.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.enums.VoteType;
 
@@ -94,6 +95,14 @@ public class VoteUIEntry {
         LootVoteScreen.drawScaledString(gui, font, stack.getDisplayName().getString(), x + 33, y + 9, 1.0f, 0xFFFFFF);
         float progress = timerTicks / 600.0f;
         drawProgressBar(gui, progress, x + 6, y + 33, 104, 5, 0xFFB2CA5D);
+
+        if (needButton.isMouseOver(mouseX, mouseY)) {
+            gui.renderTooltip(font, Component.literal("need"), mouseX, mouseY);
+        } else if (greedButton.isMouseOver(mouseX, mouseY)) {
+            gui.renderTooltip(font, Component.literal("I won't refuse"), mouseX, mouseY);
+        } else if (passButton.isMouseOver(mouseX, mouseY)) {
+            gui.renderTooltip(font, Component.literal("pass"), mouseX, mouseY);
+        }
     }
 
     private void drawProgressBar(GuiGraphics graphics, float progress, int x, int y, int width, int height, int color) {
