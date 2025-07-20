@@ -1,3 +1,10 @@
 {
-  "player.roll.result": "%1$s бросил кубик и получил %2$d (%3$d–%4$d)"
-}
+  "player.roll.result": "%1$s бросил кубик и получил %2$d (%3$d–%4$d)",
+  "lootroll.vote.result": "Результаты голосования за лот: %s",
+  "lootroll.vote.entry": " - %s %s (%s)",
+  "lootroll.vote.winner": "Победитель: %s",
+  "lootroll.vote.won": "🎉 Вы выиграли лот!",
+  "lootroll.vote.pass": "%s пасует за %s",
+  "lootroll.vote.roll": "%s бросает %s за %s (%s)",
+  "lootroll.vote.already_voted": "Вы уже проголосовали"
+ }

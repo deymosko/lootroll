@@ -1,8 +1,10 @@
 package org.deymosko.lootroll.events;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.enums.VoteType;
 
@@ -10,6 +12,24 @@ import java.util.*;
 
 public class VoteManager {
     private static final Map<UUID, VoteSession> activeVotes = new HashMap<>();
+
+    private static Component toItemComponent(ItemStack stack) {
+        return Component.literal(stack.getHoverName().getString())
+                .withStyle(style -> style
+                        .withColor(ChatFormatting.GREEN)
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(stack.copy()))));
+    }
+
+    private static Component joinWithComma(List<Component> components) {
+        MutableComponent result = Component.empty();
+        for (int i = 0; i < components.size(); i++) {
+            if (i > 0) {
+                result.append(Component.literal(", ").withStyle(ChatFormatting.GREEN));
+            }
+            result.append(components.get(i));
+        }
+        return result;
+    }
 
     public static void addSession(VoteSession session) {
         activeVotes.put(session.getId(), session);
@@ -38,17 +58,19 @@ public class VoteManager {
                                 player.drop(stack.copy(), false);
                             }
                         }
-                        player.displayClientMessage(Component.literal("🎉 Ви виграли лот!"), false);
+                        player.displayClientMessage(Component.translatable("lootroll.vote.won")
+                                .withStyle(ChatFormatting.GREEN), false);
                     }
                 });
 
                 // Повідомляємо результати
-                String itemsStr = session.getItems().stream()
-                        .map(i -> i.getHoverName().getString())
-                        .reduce((a, b) -> a + ", " + b).orElse("порожній лот");
+                Component itemsComponent = joinWithComma(session.getItems().stream()
+                        .map(VoteManager::toItemComponent)
+                        .toList());
 
                 for (ServerPlayer p : session.getParticipants()) {
-                    p.sendSystemMessage(Component.literal("Результати голосування за лот: " + itemsStr));
+                    p.sendSystemMessage(Component.translatable("lootroll.vote.result", itemsComponent)
+                            .withStyle(ChatFormatting.GREEN));
                     session.getVotes().forEach((id, vote) -> {
                         int roll = session.getRolls().getOrDefault(id, 0);
                         String name = session.getParticipants().stream()
@@ -56,7 +78,8 @@ public class VoteManager {
                                 .findFirst()
                                 .map(sp -> sp.getName().getString())
                                 .orElse(id.toString());
-                        p.sendSystemMessage(Component.literal(" - " + name + " " + vote + " " + roll));
+                        p.sendSystemMessage(Component.translatable("lootroll.vote.entry", name, vote, roll)
+                                .withStyle(ChatFormatting.GREEN));
                     });
                     winnerOpt.ifPresent(win -> {
                         String winnerName = session.getParticipants().stream()
@@ -64,7 +87,8 @@ public class VoteManager {
                                 .findFirst()
                                 .map(sp -> sp.getName().getString())
                                 .orElse(win.toString());
-                        p.sendSystemMessage(Component.literal("Переможець: " + winnerName));
+                        p.sendSystemMessage(Component.translatable("lootroll.vote.winner", winnerName)
+                                .withStyle(ChatFormatting.GREEN));
                     });
                 }
             }
@@ -80,21 +104,24 @@ public class VoteManager {
         VoteSession session = activeVotes.get(sessionId);
         if (session != null) {
             if (session.getVotes().containsKey(player.getUUID())) {
-                player.sendSystemMessage(Component.literal("Ви вже проголосували"));
+                player.sendSystemMessage(Component.translatable("lootroll.vote.already_voted")
+                        .withStyle(ChatFormatting.GREEN));
                 return;
             }
             session.vote(player.getUUID(), type);
 
-            String itemsStr = session.getItems().stream()
-                    .map(i -> i.getHoverName().getString())
-                    .reduce((a, b) -> a + ", " + b).orElse("порожній лот");
+            Component itemsComponent = joinWithComma(session.getItems().stream()
+                    .map(VoteManager::toItemComponent)
+                    .toList());
 
             int roll = session.getRolls().getOrDefault(player.getUUID(), 0);
             for (ServerPlayer p : session.getParticipants()) {
                 if (type == VoteType.PASS) {
-                    p.sendSystemMessage(Component.literal(player.getName().getString() + " пасує за " + itemsStr));
+                    p.sendSystemMessage(Component.translatable("lootroll.vote.pass", player.getName(), itemsComponent)
+                            .withStyle(ChatFormatting.GREEN));
                 } else {
-                    p.sendSystemMessage(Component.literal(player.getName().getString() + " кидає " + roll + " за " + itemsStr + " (" + type + ")"));
+                    p.sendSystemMessage(Component.translatable("lootroll.vote.roll", player.getName(), roll, itemsComponent, type)
+                            .withStyle(ChatFormatting.GREEN));
                 }
             }
         }
