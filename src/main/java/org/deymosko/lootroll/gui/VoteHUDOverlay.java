@@ -48,6 +48,7 @@ public class VoteHUDOverlay{
                 x+15, y+16, 0.5f, 0xFFFF55);
     });
 
+
     public static void drawScaledString(GuiGraphics guiGraphics, Font font, String text, float screenX, float screenY, float scale, int color) {
         var pose = guiGraphics.pose();
         pose.pushPose();

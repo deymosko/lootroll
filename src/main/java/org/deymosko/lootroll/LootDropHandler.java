@@ -44,7 +44,6 @@ public class LootDropHandler {
 
 
         event.getDrops().clear();
-        Lootroll.LOGGER.info("[LootRoll] Смерть сутності {} — дроп заблоковано, починаємо голосування.", entityId);
 
 
 
@@ -78,7 +77,6 @@ public class LootDropHandler {
                 Packets.sendToClient(new VoteStartS2CPacket(session.getId(), items, session.getEndTime()), p);
             }
         }
-        Lootroll.LOGGER.info("Почато голосування за {} предметів, учасників: {}", loot.size(), serverPlayers.size());
 
 
 

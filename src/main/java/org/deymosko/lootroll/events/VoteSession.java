@@ -60,7 +60,7 @@ public class VoteSession {
         } else if (!greeders.isEmpty()) {
             return getTopRoll(greeders);
         }
-        return Optional.empty(); // всі натиснули PASS
+        return Optional.empty();
     }
 
     private List<UUID> getVoters(VoteType type) {

@@ -8,4 +8,14 @@
   "lootroll.vote.pass": "%s passes on %s",
   "lootroll.vote.roll": "%s rolls %s for %s (%s)",
   "lootroll.vote.already_voted": "You have already voted"
- }
+  ,"lootroll.command.players_only": "This command is for players only."
+  ,"lootroll.command.no_item_in_hand": "You have no item in your hand."
+  ,"lootroll.roll.invalid_range": "Minimum cannot be greater than maximum."
+  ,"screen.lootroll.vote": "Loot Vote"
+  ,"lootroll.hud.active_vote": "\ud83d\udce6 Active loot vote"
+  ,"lootroll.hud.press_to_vote": "Press [G] to vote"
+  ,"lootroll.vote.unwanted": "%s is not needed by anyone",
+  "lootroll.gui.vote.greed": "I won't refuse",
+  "lootroll.gui.vote.need": "Need",
+  "lootroll.gui.vote.pass": "Pass"
+}

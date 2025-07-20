@@ -92,16 +92,16 @@ public class VoteUIEntry {
         if (mouseX >= itemX && mouseX <= itemX + 16 && mouseY >= itemY && mouseY <= itemY + 16) {
             gui.renderTooltip(font, stack, mouseX, mouseY);
         }
-        LootVoteScreen.drawScaledString(gui, font, stack.getDisplayName().getString(), x + 33, y + 9, 1.0f, 0xFFFFFF);
+        LootVoteScreen.drawScaledString(gui, font, stack.getDisplayName().getString(), x + 33, y + 9, 0.7f, 0xFFFFFF);
         float progress = timerTicks / 600.0f;
         drawProgressBar(gui, progress, x + 6, y + 33, 104, 5, 0xFFB2CA5D);
 
         if (needButton.isMouseOver(mouseX, mouseY)) {
-            gui.renderTooltip(font, Component.literal("need"), mouseX, mouseY);
+            gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.need"), mouseX, mouseY);
         } else if (greedButton.isMouseOver(mouseX, mouseY)) {
-            gui.renderTooltip(font, Component.literal("I won't refuse"), mouseX, mouseY);
+            gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.greed"), mouseX, mouseY);
         } else if (passButton.isMouseOver(mouseX, mouseY)) {
-            gui.renderTooltip(font, Component.literal("pass"), mouseX, mouseY);
+            gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.pass"), mouseX, mouseY);
         }
     }
 

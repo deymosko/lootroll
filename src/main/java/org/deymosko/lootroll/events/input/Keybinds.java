@@ -22,7 +22,7 @@ public class Keybinds {
         openVoteMenu = new KeyMapping(
                 "key.lootroll.open_vote_menu",
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_G,
+                GLFW.GLFW_KEY_H,
                 "key.categories.misc"
         );
         event.register(openVoteMenu);
