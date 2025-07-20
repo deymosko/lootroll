@@ -1,0 +1,5 @@
+
+[loot]
+	#List of entity IDs that should trigger loot voting (example: minecraft:warden)
+	loot_entities = ["minecraft:warden", "minecraft:pig"]
+
