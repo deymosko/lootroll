@@ -6,18 +6,18 @@ import java.util.*;
 
 public class ClientVoteCache {
 
-    public record VoteData(ItemStack item, long endTime) {}
+    public record VoteData(List<ItemStack> items, long endTime) {}
 
     private static final Map<UUID, VoteData> voteQueue = new LinkedHashMap<>();
 
-
-    public static void add(UUID id, ItemStack item, long endTime) {
-        voteQueue.putIfAbsent(id, new VoteData(item.copy(), endTime));
+    public static void add(UUID id, List<ItemStack> items, long endTime) {
+        voteQueue.putIfAbsent(id, new VoteData(items, endTime));
     }
 
     public static void remove(UUID id) {
         voteQueue.remove(id);
     }
+
     public static Set<UUID> getPendingVotes() {
         return Collections.unmodifiableSet(voteQueue.keySet());
     }
@@ -26,8 +26,8 @@ public class ClientVoteCache {
         return !voteQueue.isEmpty();
     }
 
-    public static ItemStack getCurrentItem() {
-        return voteQueue.isEmpty() ? ItemStack.EMPTY : voteQueue.values().iterator().next().item();
+    public static List<ItemStack> getCurrentItems() {
+        return voteQueue.isEmpty() ? List.of() : voteQueue.values().iterator().next().items();
     }
 
     public static UUID getCurrentId() {
@@ -43,6 +43,6 @@ public class ClientVoteCache {
             voteQueue.remove(getCurrentId());
         }
     }
-
 }
+
 

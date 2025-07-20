@@ -8,26 +8,29 @@ import java.util.*;
 
 public class VoteSession {
     private final UUID sessionId;
-    private final ItemStack item;
+    private final List<ItemStack> items;
     private final List<ServerPlayer> participants;
     private final Map<UUID, VoteType> votes = new HashMap<>();
     private final Map<UUID, Integer> rolls = new HashMap<>();
     private final long endTime;
 
-    public VoteSession(ItemStack item, List<ServerPlayer> participants, int durationSeconds) {
+
+    public VoteSession(List<ItemStack> items, List<ServerPlayer> participants, int durationSeconds) {
         this.sessionId = UUID.randomUUID();
-        this.item = item.copy();
+        this.items = items.stream().map(ItemStack::copy).toList();
         this.participants = new ArrayList<>(participants);
         this.endTime = System.currentTimeMillis() + durationSeconds * 1000L;
     }
+
+    public List<ItemStack> getItems() {
+        return items;
+    }
+
 
     public UUID getId() {
         return sessionId;
     }
 
-    public ItemStack getItem() {
-        return item;
-    }
 
     public List<ServerPlayer> getParticipants() {
         return participants;

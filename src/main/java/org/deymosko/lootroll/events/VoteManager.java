@@ -3,6 +3,7 @@ package org.deymosko.lootroll.events;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.enums.VoteType;
 
 import java.util.*;
@@ -24,26 +25,30 @@ public class VoteManager {
             if (session.isFinished()) {
                 finished.add(session.getId());
                 Optional<UUID> winnerOpt = session.getWinner();
-                winnerOpt.ifPresent(winner ->
-                {
-                    System.out.println("[VoteManager] Переможець голосування " + session.getId() + ": " + winner);
 
-                    for (ServerPlayer p : session.getParticipants()) {
-                        if (p.getUUID().equals(winner)) {
-                            boolean success = p.getInventory().add(session.getItem().copy());
+                // Віддаємо весь лот переможцю
+                winnerOpt.ifPresent(winner -> {
+                    ServerPlayer player = session.getParticipants().stream()
+                            .filter(p -> p.getUUID().equals(winner))
+                            .findFirst().orElse(null);
+                    if (player != null) {
+                        for (ItemStack stack : session.getItems()) {
+                            boolean success = player.getInventory().add(stack.copy());
                             if (!success) {
-                                p.drop(session.getItem().copy(), false);
+                                player.drop(stack.copy(), false);
                             }
-                            p.displayClientMessage(Component.literal("🎉 Ви виграли: " + session.getItem().getHoverName().getString()), false);
-                            break;
                         }
+                        player.displayClientMessage(Component.literal("🎉 Ви виграли лот!"), false);
                     }
                 });
 
-                // Повідомляємо результати всім учасникам
-                String itemName = session.getItem().getHoverName().getString();
+                // Повідомляємо результати
+                String itemsStr = session.getItems().stream()
+                        .map(i -> i.getHoverName().getString())
+                        .reduce((a, b) -> a + ", " + b).orElse("порожній лот");
+
                 for (ServerPlayer p : session.getParticipants()) {
-                    p.sendSystemMessage(Component.literal("Результати голосування за " + itemName + ":"));
+                    p.sendSystemMessage(Component.literal("Результати голосування за лот: " + itemsStr));
                     session.getVotes().forEach((id, vote) -> {
                         int roll = session.getRolls().getOrDefault(id, 0);
                         String name = session.getParticipants().stream()
@@ -80,15 +85,19 @@ public class VoteManager {
             }
             session.vote(player.getUUID(), type);
 
-            String itemName = session.getItem().getHoverName().getString();
+            String itemsStr = session.getItems().stream()
+                    .map(i -> i.getHoverName().getString())
+                    .reduce((a, b) -> a + ", " + b).orElse("порожній лот");
+
             int roll = session.getRolls().getOrDefault(player.getUUID(), 0);
             for (ServerPlayer p : session.getParticipants()) {
                 if (type == VoteType.PASS) {
-                    p.sendSystemMessage(Component.literal(player.getName().getString() + " пасує за " + itemName));
+                    p.sendSystemMessage(Component.literal(player.getName().getString() + " пасує за " + itemsStr));
                 } else {
-                    p.sendSystemMessage(Component.literal(player.getName().getString() + " кидає " + roll + " за " + itemName + " (" + type + ")"));
+                    p.sendSystemMessage(Component.literal(player.getName().getString() + " кидає " + roll + " за " + itemsStr + " (" + type + ")"));
                 }
             }
         }
     }
 }
+

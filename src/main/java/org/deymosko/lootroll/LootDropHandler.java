@@ -9,6 +9,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -37,12 +41,14 @@ public class LootDropHandler {
 
         if (!configList.contains(entityId.toString())) return;
 
-        // ❗ Знайшли підходящу сутність — зупиняємо дроп
+
         event.getDrops().clear();
         Lootroll.LOGGER.info("[LootRoll] Смерть сутності {} — дроп заблоковано, починаємо голосування.", entityId);
 
-        // (тимчасово) логування гравців поруч
+
+
         ServerLevel serverLevel = (ServerLevel) level;
+
         List<ServerPlayer> serverPlayers = serverLevel.getNearbyPlayers(
                         TargetingConditions.forNonCombat(),
                         entity,
@@ -51,16 +57,29 @@ public class LootDropHandler {
                 .filter(p -> p instanceof ServerPlayer)
                 .map(p -> (ServerPlayer) p)
                 .toList();
-        ItemStack testItem = new ItemStack(Items.DIAMOND_SWORD); // Потім замінимо на лут із loot table
+        LootParams lootParams = new LootParams.Builder(serverLevel)
+                .withParameter(LootContextParams.THIS_ENTITY, entity)
+                .withParameter(LootContextParams.DAMAGE_SOURCE, event.getSource())
+                .withParameter(LootContextParams.ORIGIN, entity.position()) // ← ОБОВ’ЯЗКОВИЙ параметр
+                .create(LootContextParamSets.ENTITY);
 
-        VoteSession session = new VoteSession(testItem, serverPlayers, 30); // 30 секунд
+
+        LootTable lootTable = serverLevel.getServer().getLootData().getLootTable(entity.getLootTable());
+        List<ItemStack> loot = lootTable.getRandomItems(lootParams);
+
+        if (loot.isEmpty()) return;
+
+        VoteSession session = new VoteSession(loot, serverPlayers, 30);
         VoteManager.addSession(session);
-
-        Lootroll.LOGGER.info("Почато голосування за {}, учасників: {}", testItem.getDisplayName().getString(), serverPlayers.size());
+        Lootroll.LOGGER.info("Почато голосування за {} предметів, учасників: {}", loot.size(), serverPlayers.size());
 
         for (ServerPlayer p : serverPlayers) {
             Lootroll.LOGGER.info("→ Поблизу гравець: {}", p.getName().getString());
-            Packets.sendToClient(new VoteStartS2CPacket(session.getId(), testItem, session.getEndTime()), p);
+            // Потрібно оновити VoteStartS2CPacket, щоб він міг передавати список ItemStack
+            Packets.sendToClient(new VoteStartS2CPacket(session.getId(), loot, session.getEndTime()), p);
         }
+
+
+
     }
 }

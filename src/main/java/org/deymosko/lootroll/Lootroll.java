@@ -64,52 +64,12 @@ public class Lootroll {
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            VoteManager.tick();
-        }
-    }
-
-    @SubscribeEvent
-    public static void onEntityDrops(LivingDropsEvent event)
-    {
-        LivingEntity entity = event.getEntity();
-        Level level = entity.level();
-
-        if (level.isClientSide) return;
-
-
-        ResourceLocation entityId = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        if (entityId == null || !Config.LOOT_ENTITIES.get().contains(entityId.toString())) return;
-
-        // Блокуємо дроп
-        event.getDrops().clear();
-
-        ServerLevel serverLevel = (ServerLevel) level;
-        List<ServerPlayer> serverPlayers = new ArrayList<>();
-        TargetingConditions conditions = TargetingConditions.DEFAULT;
-        for (Player p : level.getNearbyPlayers(conditions, entity, entity.getBoundingBox().inflate(100.0d))) {
-            if (p instanceof ServerPlayer sp) {
-                serverPlayers.add(sp);
+        public void onServerTick(TickEvent.ServerTickEvent event) {
+            if (event.phase == TickEvent.Phase.END) {
+                VoteManager.tick();
             }
         }
 
-        if (serverPlayers.isEmpty())
-        {
-            System.out.println("No players found");
-            return;
-        }
-
-        // Тимчасово генеруємо один предмет як тест
-        ItemStack testItem = new ItemStack(Items.DIAMOND_SWORD); // Потім замінимо на лут із loot table
-
-        VoteSession session = new VoteSession(testItem, serverPlayers, 30); // 30 секунд
-        VoteManager.addSession(session);
-
-        Lootroll.LOGGER.info("Почато голосування за {}, учасників: {}", testItem.getDisplayName().getString(), serverPlayers.size());
-
-        serverPlayers.forEach(p -> Packets.sendToClient(new VoteStartS2CPacket(session.getId(), testItem, session.getEndTime()), p));
-    }
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event)
