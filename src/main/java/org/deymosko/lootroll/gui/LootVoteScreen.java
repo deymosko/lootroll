@@ -18,7 +18,7 @@ public class LootVoteScreen extends Screen {
     private final List<VoteUIEntry> entries = new ArrayList<>();
 
     public LootVoteScreen() {
-        super(Component.literal("Loot Vote"));
+        super(Component.translatable("screen.lootroll.vote"));
     }
 
     @Override
