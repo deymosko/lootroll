@@ -39,6 +39,7 @@ import org.deymosko.lootroll.commands.RollCommand;
 import org.deymosko.lootroll.events.VoteManager;
 import org.deymosko.lootroll.events.VoteSession;
 import org.deymosko.lootroll.network.Packets;
+import org.deymosko.lootroll.network.s2c.VoteStartS2CPacket;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -102,7 +103,7 @@ public class Lootroll {
 
         Lootroll.LOGGER.info("Почато голосування за {}, учасників: {}", testItem.getDisplayName().getString(), serverPlayers.size());
 
-        // TODO: тут пізніше — Packet до клієнтів
+        serverPlayers.forEach(p -> Packets.sendToClient(new VoteStartS2CPacket(session.getId(), testItem), p));
     }
 
     @SubscribeEvent

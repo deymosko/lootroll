@@ -27,10 +27,7 @@ public class VoteStartS2CPacket {
     }
 
     public static void handle(VoteStartS2CPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ClientVoteCache.add(msg.voteId);
-            ClientVoteCache.addVote(msg.item);
-        });
+        ctx.get().enqueueWork(() -> ClientVoteCache.add(msg.voteId, msg.item));
         ctx.get().setPacketHandled(true);
     }
 }
