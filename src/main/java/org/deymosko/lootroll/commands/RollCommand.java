@@ -46,7 +46,7 @@ public class RollCommand {
         Random rand = new Random();
 
         if (min > max) {
-            source.sendFailure(Component.literal("Мінімум не може бути більшим за максимум."));
+            source.sendFailure(Component.translatable("lootroll.roll.invalid_range"));
             return 0;
         }
 
@@ -55,7 +55,7 @@ public class RollCommand {
         try {
             sender = source.getPlayerOrException();
         } catch (Exception e) {
-            source.sendFailure(Component.literal("Команда лише для гравців."));
+            source.sendFailure(Component.translatable("lootroll.command.players_only"));
             return 0;
         }
 

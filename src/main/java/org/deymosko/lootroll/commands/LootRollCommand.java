@@ -37,13 +37,13 @@ public class LootRollCommand {
         try {
             player = source.getPlayerOrException();
         } catch (Exception e) {
-            source.sendFailure(Component.literal("Команда лише для гравців."));
+            source.sendFailure(Component.translatable("lootroll.command.players_only"));
             return 0;
         }
 
         ItemStack stack = player.getMainHandItem();
         if (stack.isEmpty()) {
-            player.sendSystemMessage(Component.literal("У вас немає предмета в руці."));
+            player.sendSystemMessage(Component.translatable("lootroll.command.no_item_in_hand"));
             return 0;
         }
 
