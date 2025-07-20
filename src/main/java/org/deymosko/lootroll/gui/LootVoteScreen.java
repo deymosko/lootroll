@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.ClientVoteCache;
 import org.deymosko.lootroll.enums.VoteType;
+import org.deymosko.lootroll.events.VoteSession;
 import org.deymosko.lootroll.network.Packets;
 import org.deymosko.lootroll.network.c2s.VoteC2SPacket;
 
@@ -21,6 +22,7 @@ public class LootVoteScreen extends Screen {
     private final UUID voteId;
     private int timerTicks = 600; // 30 секунд при 20 тік/сек
     private HoverableImageButton needButton, greedButton, passButton;
+    private VoteSession session;
 
     public LootVoteScreen(UUID voteId, ItemStack item) {
         super(Component.literal("Loot Vote"));

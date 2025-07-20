@@ -38,6 +38,7 @@ public class VoteSession {
             votes.put(playerId, vote);
             if (vote == VoteType.NEED || vote == VoteType.GREED) {
                 int roll = new Random().nextInt(100) + 1;
+                System.out.println(playerId + ": " + roll);
                 rolls.put(playerId, roll);
             }
         }

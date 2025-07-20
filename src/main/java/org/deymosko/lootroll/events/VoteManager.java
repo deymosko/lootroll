@@ -1,6 +1,8 @@
 package org.deymosko.lootroll.events;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import org.deymosko.lootroll.enums.VoteType;
 
 import java.util.*;
@@ -21,11 +23,24 @@ public class VoteManager {
         for (VoteSession session : activeVotes.values()) {
             if (session.isFinished()) {
                 finished.add(session.getId());
-                // тут буде логіка видачі луту
+                session.getWinner().ifPresent(winner ->
+                {
+                    System.out.println("[VoteManager] Переможець голосування " + session.getId() + ": " + winner);
+
+                    for (ServerPlayer p : session.getParticipants()) {
+                        if (p.getUUID().equals(winner)) {
+                            boolean success = p.getInventory().add(session.getItem().copy());
+                            if (!success) {
+                                p.drop(session.getItem().copy(), false);
+                            }
+                            p.displayClientMessage(Component.literal("🎉 Ви виграли: " + session.getItem().getHoverName().getString()), false);
+                            break;
+                        }
+                    }
+
+
+                });
             }
-        }
-        for (UUID id : finished) {
-            activeVotes.remove(id);
         }
     }
 
@@ -36,6 +51,7 @@ public class VoteManager {
     public static void vote(UUID sessionId, ServerPlayer player, VoteType type) {
         VoteSession session = activeVotes.get(sessionId);
         if (session != null) {
+            System.out.println("[VoteManager] " + player.getName() + " is already voted");
             session.vote(player.getUUID(), type);
         }
     }
