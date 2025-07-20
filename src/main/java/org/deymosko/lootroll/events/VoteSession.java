@@ -86,5 +86,9 @@ public class VoteSession {
     public long getTimeLeftMs() {
         return Math.max(0, endTime - System.currentTimeMillis());
     }
+
+    public long getEndTime() {
+        return endTime;
+    }
 }
 

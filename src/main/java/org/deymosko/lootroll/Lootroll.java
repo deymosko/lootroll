@@ -108,7 +108,7 @@ public class Lootroll {
 
         Lootroll.LOGGER.info("Почато голосування за {}, учасників: {}", testItem.getDisplayName().getString(), serverPlayers.size());
 
-        serverPlayers.forEach(p -> Packets.sendToClient(new VoteStartS2CPacket(session.getId(), testItem), p));
+        serverPlayers.forEach(p -> Packets.sendToClient(new VoteStartS2CPacket(session.getId(), testItem, session.getEndTime()), p));
     }
 
     @SubscribeEvent

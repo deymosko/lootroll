@@ -22,7 +22,7 @@ public class ClientForgeEvents {
 
         while (Keybinds.openVoteMenu.consumeClick()) {
             if (ClientVoteCache.hasVote()) {
-                mc.setScreen(new LootVoteScreen(ClientVoteCache.getCurrentId(), ClientVoteCache.getCurrentItem()));
+                mc.setScreen(new LootVoteScreen(ClientVoteCache.getCurrentId(), ClientVoteCache.getCurrentItem(), ClientVoteCache.getCurrentEndTime()));
             }
         }
     }
