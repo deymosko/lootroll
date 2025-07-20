@@ -18,6 +18,10 @@ public class ClientVoteCache {
         voteQueue.remove(id);
     }
 
+    public static VoteData get(UUID id) {
+        return voteQueue.get(id);
+    }
+
     public static Set<UUID> getPendingVotes() {
         return Collections.unmodifiableSet(voteQueue.keySet());
     }
