@@ -36,6 +36,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.deymosko.lootroll.commands.RollCommand;
+import org.deymosko.lootroll.commands.LootRollCommand;
 import org.deymosko.lootroll.events.VoteManager;
 import org.deymosko.lootroll.events.VoteSession;
 import org.deymosko.lootroll.network.Packets;
@@ -74,8 +75,9 @@ public class Lootroll {
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event)
     {
-        LOGGER.info("Реєструємо команду /roll");
+        LOGGER.info("Реєструємо команди /roll та /lootroll");
         RollCommand.register(event.getDispatcher());
+        LootRollCommand.register(event.getDispatcher());
     }
 
     public void onCommonSetup(final FMLCommonSetupEvent event)
