@@ -61,7 +61,7 @@ public class LootRollCommand {
             }
         }
 
-        VoteSession session = new VoteSession(Collections.singletonList(prize), participants, 30);
+        VoteSession session = new VoteSession(Collections.singletonList(prize), participants, 30, player.getUUID());
         VoteManager.addSession(session);
         for (ServerPlayer p : participants) {
             Packets.sendToClient(new VoteStartS2CPacket(session.getId(), session.getItems(), session.getEndTime()), p);

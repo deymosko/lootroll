@@ -64,7 +64,20 @@ public class VoteManager {
                                 .withStyle(ChatFormatting.GREEN), false);
                     }
                 });
-
+                if (winnerOpt.isEmpty() && session.getVotes().isEmpty() && session.getInitiatorId() != null) {
+                    UUID starterId = session.getInitiatorId();
+                    ServerPlayer starter = session.getParticipants().stream()
+                            .filter(p -> p.getUUID().equals(starterId))
+                            .findFirst().orElse(null);
+                    if (starter != null) {
+                        for (ItemStack stack : session.getItems()) {
+                            boolean success = starter.getInventory().add(stack.copy());
+                            if (!success) {
+                                starter.drop(stack.copy(), false);
+                            }
+                        }
+                    }
+                }
                 Component itemsComponent = joinWithComma(session.getItems().stream()
                         .map(VoteManager::toItemComponent)
                         .toList());

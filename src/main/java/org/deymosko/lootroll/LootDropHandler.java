@@ -71,7 +71,7 @@ public class LootDropHandler {
         for(int i = 0; i < loot.size(); i++)
         {
             List<ItemStack> items = Collections.singletonList(loot.get(i));
-            VoteSession session = new VoteSession(items, serverPlayers, 30);
+            VoteSession session = new VoteSession(items, serverPlayers, 30, null);
             VoteManager.addSession(session);
             for (ServerPlayer p : serverPlayers) {
                 Packets.sendToClient(new VoteStartS2CPacket(session.getId(), items, session.getEndTime()), p);

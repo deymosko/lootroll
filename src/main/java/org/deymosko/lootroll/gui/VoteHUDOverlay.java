@@ -17,6 +17,8 @@ import net.minecraftforge.fml.common.Mod;
 import org.deymosko.lootroll.ClientVoteCache;
 import org.deymosko.lootroll.Lootroll;
 
+import java.awt.*;
+
 
 public class VoteHUDOverlay{
     public static final IGuiOverlay HUD_WARN = ((gui, guiGraphics, partialTick, screenWidth, screenHeight) -> {
@@ -39,9 +41,11 @@ public class VoteHUDOverlay{
         RenderSystem.setShaderTexture(0, texture);
 
         guiGraphics.blit(texture, x, y, 0, 0, 96, 32, 96, 32);
-
         LootVoteScreen.drawScaledWrappedString(guiGraphics, mc.font, Component.translatable("lootroll.hud.active_vote"), x+15, y+6, 0.5f, 0xFFFFFF, 80);
-        LootVoteScreen.drawScaledWrappedString(guiGraphics, mc.font, Component.translatable("lootroll.hud.press_to_vote"), x+15, y+16, 0.5f, 0xFFFFFF, 80);
+        Component keyName = org.deymosko.lootroll.events.input.Keybinds.openVoteMenu.getTranslatedKeyMessage();
+        Component pressToVote = Component.translatable("lootroll.hud.press_to_vote", keyName);
+        LootVoteScreen.drawScaledWrappedString(guiGraphics, mc.font, pressToVote, x + 15, y + 16, 0.5f, 0xFFFFFF, 80);
+
     });
 
 

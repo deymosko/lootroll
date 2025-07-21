@@ -13,7 +13,7 @@
   ,"lootroll.roll.invalid_range": "Minimum cannot be greater than maximum."
   ,"screen.lootroll.vote": "Loot Vote"
   ,"lootroll.hud.active_vote": "\ud83d\udce6 Active loot vote"
-  ,"lootroll.hud.press_to_vote": "Press [G] to vote"
+  ,"lootroll.hud.press_to_vote": "Press %s to vote"
   ,"lootroll.vote.unwanted": "%s is not needed by anyone",
   "lootroll.gui.vote.greed": "I won't refuse",
   "lootroll.gui.vote.need": "Need",
