@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Specification-Title: lootroll
-Specification-Vendor: deymosko
-Specification-Version: 1
-Implementation-Title: lootroll
-Implementation-Version: 1.0.1_beta_forge_1.20.1
-Implementation-Vendor: deymosko
-Implementation-Timestamp: 2025-07-21T04:36:49+0200
-
