@@ -89,12 +89,19 @@ public class VoteUIEntry {
         int itemX = x + 8;
         int itemY = y + 10;
         gui.renderItem(stack, itemX, itemY);
+        if (stack.getCount() > 1) {
+            String countText = String.valueOf(stack.getCount());
+            gui.pose().pushPose();
+            gui.pose().translate(0, 0, 300);
+            gui.drawString(font, countText, itemX + 17 - font.width(countText), itemY + 10, 0xFFFFFF, true);
+            gui.pose().popPose();
+        }
         if (mouseX >= itemX && mouseX <= itemX + 16 && mouseY >= itemY && mouseY <= itemY + 16) {
             gui.renderTooltip(font, stack, mouseX, mouseY);
         }
-        LootVoteScreen.drawScaledString(gui, font, stack.getDisplayName().getString(), x + 33, y + 9, 0.7f, 0xFFFFFF);
+        LootVoteScreen.drawScaledWrappedString(gui, font, stack.getDisplayName(), x + 33, y + 9, 0.7f, 0xFFFFFF, 80);
         float progress = timerTicks / 600.0f;
-        drawProgressBar(gui, progress, x + 6, y + 33, 104, 5, 0xFFB2CA5D);
+        drawProgressBar(gui, progress, x + 6, y + 33, 104, 5);
 
         if (needButton.isMouseOver(mouseX, mouseY)) {
             gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.need"), mouseX, mouseY);
@@ -105,9 +112,18 @@ public class VoteUIEntry {
         }
     }
 
-    private void drawProgressBar(GuiGraphics graphics, float progress, int x, int y, int width, int height, int color) {
+    private void drawProgressBar(GuiGraphics graphics, float progress, int x, int y, int width, int height) {
         progress = Math.min(Math.max(progress, 0.0f), 1.0f);
         int filledWidth = (int) (width * progress);
-        graphics.fill(x, y, x + filledWidth, y + height, color);
+
+        if (filledWidth > 0) {
+            RenderSystem.setShaderTexture(0, GuiTextures.TIMER_PROGRESS_BAR);
+            graphics.blit(GuiTextures.TIMER_PROGRESS_BAR,
+                    x, y,
+                    0, 0,
+                    filledWidth, height,
+                    width, height
+            );
+        }
     }
 }

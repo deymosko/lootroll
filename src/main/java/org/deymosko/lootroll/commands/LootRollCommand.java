@@ -22,7 +22,7 @@ import java.util.List;
 
 public class LootRollCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("lootroll")
+        dispatcher.register(Commands.literal("startvote")
                 .executes(ctx -> createLootRoll(ctx.getSource(), -1))
                 .then(Commands.argument("count", IntegerArgumentType.integer(1))
                         .executes(ctx -> {

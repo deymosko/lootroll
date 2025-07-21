@@ -5,6 +5,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.enums.VoteType;
 
@@ -46,7 +48,6 @@ public class VoteManager {
                 finished.add(session.getId());
                 Optional<UUID> winnerOpt = session.getWinner();
 
-                // Віддаємо весь лот переможцю
                 winnerOpt.ifPresent(winner -> {
                     ServerPlayer player = session.getParticipants().stream()
                             .filter(p -> p.getUUID().equals(winner))
@@ -58,12 +59,12 @@ public class VoteManager {
                                 player.drop(stack.copy(), false);
                             }
                         }
+                        player.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0f, 1.0f);
                         player.displayClientMessage(Component.translatable("lootroll.vote.won")
                                 .withStyle(ChatFormatting.GREEN), false);
                     }
                 });
 
-                // Повідомляємо результати
                 Component itemsComponent = joinWithComma(session.getItems().stream()
                         .map(VoteManager::toItemComponent)
                         .toList());
@@ -93,8 +94,15 @@ public class VoteManager {
                 }
 
                 for (ServerPlayer p : session.getParticipants()) {
-                    p.sendSystemMessage(Component.translatable("lootroll.vote.result", itemsComponent)
-                            .withStyle(ChatFormatting.GREEN));
+                    Component countComponent = session.getItems().get(0).getCount() > 1
+                            ? Component.literal("x" + session.getItems().get(0).getCount())
+                            : Component.empty();
+
+                    Component resultMessage = Component.translatable("lootroll.vote.result", itemsComponent, countComponent)
+                            .withStyle(ChatFormatting.GREEN);
+
+                    p.sendSystemMessage(resultMessage);
+
                     if (displayType == VoteType.PASS) {
                         p.sendSystemMessage(Component.translatable("lootroll.vote.unwanted", itemsComponent)
                                 .withStyle(ChatFormatting.GREEN));
@@ -108,7 +116,7 @@ public class VoteManager {
                                     .orElse(id.toString());
 
                             Component nameComp = Component.literal(name).withStyle(ChatFormatting.YELLOW);
-                            Component voteComp = Component.literal(displayType.toString()).withStyle(ChatFormatting.RED);
+                            Component voteComp = Component.translatable("lootroll.vote.type." + displayType.name().toLowerCase()).withStyle(ChatFormatting.RED);
                             Component rollComp = Component.literal(String.valueOf(roll)).withStyle(ChatFormatting.AQUA);
 
                             p.sendSystemMessage(Component.translatable("lootroll.vote.entry", nameComp, voteComp, rollComp)

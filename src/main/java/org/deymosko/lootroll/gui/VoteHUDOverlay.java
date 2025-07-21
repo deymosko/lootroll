@@ -40,12 +40,8 @@ public class VoteHUDOverlay{
 
         guiGraphics.blit(texture, x, y, 0, 0, 96, 32, 96, 32);
 
-        drawScaledString(guiGraphics, mc.font,
-                Component.translatable("lootroll.hud.active_vote").getString(),
-                x+15, y+6, 0.5f, 0xFFFF55);
-        drawScaledString(guiGraphics, mc.font,
-                Component.translatable("lootroll.hud.press_to_vote").getString(),
-                x+15, y+16, 0.5f, 0xFFFF55);
+        LootVoteScreen.drawScaledWrappedString(guiGraphics, mc.font, Component.translatable("lootroll.hud.active_vote"), x+15, y+6, 0.5f, 0xFFFFFF, 80);
+        LootVoteScreen.drawScaledWrappedString(guiGraphics, mc.font, Component.translatable("lootroll.hud.press_to_vote"), x+15, y+16, 0.5f, 0xFFFFFF, 80);
     });
 
 

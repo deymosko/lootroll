@@ -16,5 +16,8 @@
   ,"lootroll.vote.unwanted": "%s нікому не потрібен",
   "lootroll.gui.vote.greed": "Не відмовлюсь",
   "lootroll.gui.vote.need": "Потрібно",
-  "lootroll.gui.vote.pass": "Відмова"
+  "lootroll.gui.vote.pass": "Відмова",
+  "lootroll.vote.type.need": "\"потрібно\"",
+  "lootroll.vote.type.greed": "\"Не відмовлюсь\"",
+  "lootroll.vote.type.pass": "Відмова"
 }

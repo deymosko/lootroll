@@ -17,7 +17,7 @@ license = "All Rights Reserved"
 # The modid of the mod
 modId = "lootroll" #mandatory
 # The version number of the mod
-version = "1.0-beta" #mandatory
+version = "1.0.1_beta_forge_1.20.1" #mandatory
 # A display name for the mod
 displayName = "lootroll" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://docs.minecraftforge.net/en/latest/misc/updatechecker/
@@ -26,6 +26,7 @@ displayName = "lootroll" #mandatory
 #displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
 #logoFile="lootroll.png" #optional
+logoFile="logo.png"
 # A text field displayed in the mod UI
 #credits="Thanks for this example mod goes to Java" #optional
 # A text field displayed in the mod UI

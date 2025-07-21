@@ -14,7 +14,6 @@ A Minecraft Forge mod (1.20.1) that adds a **Need / Greed / Pass** loot voting s
 - 🗨️ Chat shows full roll result history
 - 🖼️ GUI with buttons and progress bar
 - ⚙️ Configurable entity whitelist
-- 🛡️ Prevents dupe with loot suppression logic
 
 ---
 
@@ -27,48 +26,81 @@ Edit the config file:
 Example:
 
 ```toml
-LOOT_ENTITIES = [
+[loot]
+loot_entities = [
   "minecraft:zombie",
   "minecraft:skeleton",
   "minecraft:warden"
 ]
 ```
 
-Only mobs listed here will trigger the loot voting system.
+Only mobs listed here will trigger the loot voting system automatically.
 
 ---
 
-## 🧑‍💻 Player Command
+## 🧑‍💻 Player Commands
 
-Manually start a vote with:
+### 🎲 Start a loot vote
 
 ```bash
 /lootroll [amount]
 ```
 
-- `amount` *(optional)* — number of items from main hand to include in the vote  
-- If omitted, the whole stack will be used  
+- `amount` *(optional)* — number of items from main hand to include in the vote
+- If omitted, the whole stack will be used
 - If nothing is held, nothing will happen
+
+---
+
+### 🎲 Roll a number
+
+```bash
+/roll
+```
+
+- Rolls a random number between 1 and 100
+- Result is shown in chat to nearby players(radius 100);
+
+---
+
+### 🎲 Roll with custom limit
+
+```bash
+/roll limit <max>
+```
+
+- Rolls a number between 1 and `<max>`
+- Example: `/roll limit 500` → random number from 1 to 500
+- Result is shown in chat to nearby players(radius 100);
+
+---
+
+### 🎲 Roll with custom range
+
+```bash
+/roll <min> <max>
+```
+
+- Rolls a number between `<min>` and `<max>`
+- Example: `/roll 25 75` → random number from 25 to 75
+- Result is shown in chat to nearby players(radius 100);
 
 ---
 
 ## 🖼️ Screenshots
 
-### 🔔 Vote HUD Overlay
-Shows while an active vote is in progress:
-
-![HUD](screenshots/hud.png)
+### 🔔 ```/roll``` command
+![HUD](screenshots/rollcommand.png)
 
 ---
 
-### 🗳️ Loot Voting UI
+### 🗳️```/startvote``` command, Loot Voting UI
 Each item in a vote is shown with buttons:
 ![Vote Screen](screenshots/screen.png)
+![need_hover.png](screenshots/need_hover.png)
+![vote_end.png](screenshots/vote_end.png)
 ---
 
-### 💬 Chat Results
-![Chat Result](screenshots/chat_result.png)
----
 ## 📦 Installation
 
 1. Download and install [Forge 1.20.1](https://files.minecraftforge.net/net/minecraftforge/forge/)
@@ -80,10 +112,9 @@ Each item in a vote is shown with buttons:
 ## 🧠 How it works
 
 - When an entity dies:
-  - If it's on the whitelist → **its loot is suppressed**
   - Items are rolled out via the voting screen
   - All nearby players can vote (Need, Greed, Pass)
-- After 30 seconds (or once all players vote):
+  - After 30 seconds (or once all players vote):
   - The item is assigned to the winner and dropped
 
 ---
@@ -105,5 +136,4 @@ MIT License – free to use, modify and distribute.
 
 - [x] GUI with multiple item support
 - [ ] Sound effects for votes
-- [ ] Server config sync
 - [ ] Configurable voting duration

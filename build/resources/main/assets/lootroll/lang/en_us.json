@@ -17,5 +17,8 @@
   ,"lootroll.vote.unwanted": "%s is not needed by anyone",
   "lootroll.gui.vote.greed": "I won't refuse",
   "lootroll.gui.vote.need": "Need",
-  "lootroll.gui.vote.pass": "Pass"
+  "lootroll.gui.vote.pass": "Pass",
+  "lootroll.vote.type.need": "\"Need\"",
+  "lootroll.vote.type.greed": "\"I won't refuse\"",
+  "lootroll.vote.type.pass": "pass"
 }

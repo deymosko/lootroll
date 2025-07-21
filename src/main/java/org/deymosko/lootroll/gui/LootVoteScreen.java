@@ -94,6 +94,9 @@ public class LootVoteScreen extends Screen {
         }
     }
 
+    @Override
+    public void renderBackground(GuiGraphics p_283688_) {}
+
     public static void drawScaledString(GuiGraphics guiGraphics, Font font, String text, float screenX, float screenY, float scale, int color) {
         var pose = guiGraphics.pose();
         pose.pushPose();
@@ -102,5 +105,19 @@ public class LootVoteScreen extends Screen {
         pose.scale(scale, scale, 1.0f);
         guiGraphics.drawString(font, text, scaledX, scaledY, color, false);
         pose.popPose();
+    }
+    public static void drawScaledWrappedString(GuiGraphics guiGraphics, Font font, Component text,
+                                               float screenX, float screenY, float scale,
+                                               int color, int maxWidth) {
+        var lines = font.split(text, (int) (maxWidth / scale));
+        for (int i = 0; i < lines.size() && i < 2; i++) {
+            var pose = guiGraphics.pose();
+            pose.pushPose();
+            float scaledX = screenX / scale;
+            float scaledY = (screenY + i * font.lineHeight * scale) / scale;
+            pose.scale(scale, scale, 1.0f);
+            guiGraphics.drawString(font, lines.get(i), scaledX, scaledY, color, false);
+            pose.popPose();
+        }
     }
 }

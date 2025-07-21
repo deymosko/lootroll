@@ -33,7 +33,7 @@ public class LootDropHandler {
         LivingEntity entity = event.getEntity();
         Level level = entity.level();
 
-        if (level.isClientSide) return; // тільки на сервері
+        if (level.isClientSide) return;
 
         ResourceLocation entityId = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
         if (entityId == null) return;
