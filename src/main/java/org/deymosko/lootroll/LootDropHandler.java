@@ -60,6 +60,7 @@ public class LootDropHandler {
                 .filter(p -> p instanceof ServerPlayer)
                 .map(p -> (ServerPlayer) p)
                 .toList();
+
         LootParams lootParams = new LootParams.Builder(serverLevel)
                 .withParameter(LootContextParams.THIS_ENTITY, entity)
                 .withOptionalParameter(LootContextParams.DAMAGE_SOURCE, event.getSource())
