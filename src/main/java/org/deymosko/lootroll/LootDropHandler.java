@@ -33,6 +33,7 @@ public class LootDropHandler {
         LivingEntity entity = event.getEntity();
         int durationSeconds = Config.VOTE_DURATION.get();
         Level level = entity.level();
+        int radius = Config.VOTE_RADIUS.get();
 
         if (level.isClientSide) return;
 
