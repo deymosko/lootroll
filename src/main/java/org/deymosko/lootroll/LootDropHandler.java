@@ -31,6 +31,7 @@ public class LootDropHandler {
     @SubscribeEvent
     public static void onEntityDrops(LivingDropsEvent event) {
         LivingEntity entity = event.getEntity();
+        int durationSeconds = Config.VOTE_DURATION.get();
         Level level = entity.level();
 
         if (level.isClientSide) return;
