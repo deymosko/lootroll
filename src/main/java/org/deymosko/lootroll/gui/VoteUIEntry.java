@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import org.deymosko.lootroll.Config;
 import org.deymosko.lootroll.enums.VoteType;
 
 import java.util.List;
