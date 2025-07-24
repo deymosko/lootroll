@@ -21,6 +21,18 @@ public class Config
                         entry -> entry instanceof String && ((String) entry).contains(":")
                 );
 
+        builder.push("vote");
+
+        VOTE_DURATION = builder
+                .comment("Duration of the vote session in seconds (default: 30)")
+                .define("vote_duration", 30);
+
+        VOTE_RADIUS = builder
+                .comment("Radius (in blocks) around the entity in which players can vote (default: 100)")
+                .define("vote_radius", 100);
+
+
+        builder.pop();
         builder.pop();
         CONFIG = builder.build();
     }
