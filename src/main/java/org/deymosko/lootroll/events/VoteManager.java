@@ -64,7 +64,7 @@ public class VoteManager {
                                 .withStyle(ChatFormatting.GREEN), false);
                     }
                 });
-                if (winnerOpt.isEmpty() && session.getVotes().isEmpty() && session.getInitiatorId() != null) {
+                if (winnerOpt.isEmpty()) {
                     UUID starterId = session.getInitiatorId();
                     ServerPlayer starter = session.getParticipants().stream()
                             .filter(p -> p.getUUID().equals(starterId))
