@@ -20,6 +20,7 @@ public class VoteUIEntry {
     private HoverableImageButton passButton;
     private int x;
     private int y;
+    private static int duration = Config.VOTE_DURATION.get();
 
     public VoteUIEntry(UUID voteId, List<ItemStack> items, long endTime) {
         this.voteId = voteId;
