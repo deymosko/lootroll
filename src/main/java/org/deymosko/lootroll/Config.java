@@ -8,6 +8,8 @@ public class Config
 {
     public static final ForgeConfigSpec CONFIG;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> LOOT_ENTITIES;
+    public static final ForgeConfigSpec.ConfigValue<Integer> VOTE_DURATION;
+    public static final ForgeConfigSpec.ConfigValue<Integer> VOTE_RADIUS;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
