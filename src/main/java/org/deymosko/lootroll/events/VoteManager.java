@@ -69,7 +69,8 @@ public class VoteManager {
                     ServerPlayer starter = session.getParticipants().stream()
                             .filter(p -> p.getUUID().equals(starterId))
                             .findFirst().orElse(null);
-                    if (starter != null) {
+
+                    if (starter != null && session.getInitiatorId() != null) {
                         for (ItemStack stack : session.getItems()) {
                             boolean success = starter.getInventory().add(stack.copy());
                             if (!success) {
