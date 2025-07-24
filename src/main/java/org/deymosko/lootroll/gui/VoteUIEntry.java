@@ -101,7 +101,7 @@ public class VoteUIEntry {
             gui.renderTooltip(font, stack, mouseX, mouseY);
         }
         LootVoteScreen.drawScaledWrappedString(gui, font, stack.getDisplayName(), x + 33, y + 9, 0.7f, 0xFFFFFF, 80);
-        float progress = timerTicks / 600.0f;
+        float progress = timerTicks / (float)(duration*20);
         drawProgressBar(gui, progress, x + 6, y + 33, 104, 5);
 
         if (needButton.isMouseOver(mouseX, mouseY)) {
