@@ -78,6 +78,14 @@ public class VoteManager {
                             }
                         }
                     }
+                    else if(session.getVotes().isEmpty())
+                    {
+                        dropItemsToWorld(session.getItems(), session.getSourcePos(), session.getWorld());
+                    }
+                    else
+                    {
+                        dropItemsToWorld(session.getItems(), session.getSourcePos(), session.getWorld());
+                    }
                 }
                 Component itemsComponent = joinWithComma(session.getItems().stream()
                         .map(VoteManager::toItemComponent)
