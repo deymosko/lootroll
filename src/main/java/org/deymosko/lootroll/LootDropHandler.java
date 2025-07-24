@@ -55,7 +55,7 @@ public class LootDropHandler {
         List<ServerPlayer> serverPlayers = serverLevel.getNearbyPlayers(
                         TargetingConditions.forNonCombat(),
                         entity,
-                        entity.getBoundingBox().inflate(100.0)
+                        entity.getBoundingBox().inflate(radius)
                 ).stream()
                 .filter(p -> p instanceof ServerPlayer)
                 .map(p -> (ServerPlayer) p)
