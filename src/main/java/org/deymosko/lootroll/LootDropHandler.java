@@ -44,6 +44,7 @@ public class LootDropHandler {
 
         if (!configList.contains(entityId.toString())) return;
 
+        Vec3 sourcePos = event.getEntity().position();
 
         event.getDrops().clear();
 
