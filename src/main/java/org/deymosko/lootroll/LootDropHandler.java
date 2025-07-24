@@ -82,9 +82,5 @@ public class LootDropHandler {
                 Packets.sendToClient(new VoteStartS2CPacket(session.getId(), items, session.getEndTime()), p);
             }
         }
-
-
-
-
     }
 }

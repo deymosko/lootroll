@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.deymosko.lootroll.Config;
 import org.deymosko.lootroll.events.VoteManager;
 import org.deymosko.lootroll.events.VoteSession;
 import org.deymosko.lootroll.network.Packets;
@@ -21,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class LootRollCommand {
+    private static final int radius = Config.VOTE_RADIUS.get();
+    private static final int duration = Config.VOTE_DURATION.get();
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("startvote")
                 .executes(ctx -> createLootRoll(ctx.getSource(), -1))
@@ -52,7 +55,7 @@ public class LootRollCommand {
 
         ServerLevel level = player.serverLevel();
         TargetingConditions conditions = TargetingConditions.forNonCombat();
-        List<Player> nearby = level.getNearbyPlayers(conditions, player, player.getBoundingBox().inflate(100.0d));
+        List<Player> nearby = level.getNearbyPlayers(conditions, player, player.getBoundingBox().inflate(radius));
         List<ServerPlayer> participants = new ArrayList<>();
         participants.add(player);
         for (Player p : nearby) {
@@ -61,7 +64,7 @@ public class LootRollCommand {
             }
         }
 
-        VoteSession session = new VoteSession(Collections.singletonList(prize), participants, 30, player.getUUID());
+        VoteSession session = new VoteSession(Collections.singletonList(prize), participants, duration, player.getUUID(), player.position(), player.serverLevel());
         VoteManager.addSession(session);
         for (ServerPlayer p : participants) {
             Packets.sendToClient(new VoteStartS2CPacket(session.getId(), session.getItems(), session.getEndTime()), p);
