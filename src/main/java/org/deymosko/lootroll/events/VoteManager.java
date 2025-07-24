@@ -159,7 +159,12 @@ public class VoteManager {
         }
         finished.forEach(activeVotes::remove);
     }
-
+    private static void dropItemsToWorld(List<ItemStack> items, Vec3 pos, ServerLevel level) {
+        for (ItemStack stack : items) {
+            ItemEntity drop = new ItemEntity(level, pos.x, pos.y + 0.5, pos.z, stack.copy());
+            level.addFreshEntity(drop);
+        }
+    }
     public static Optional<VoteSession> get(UUID id) {
         return Optional.ofNullable(activeVotes.get(id));
     }
