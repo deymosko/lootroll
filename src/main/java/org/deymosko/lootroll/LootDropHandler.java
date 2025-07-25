@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -25,6 +26,7 @@ import org.deymosko.lootroll.network.s2c.VoteStartS2CPacket;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = Lootroll.MODID)
 public class LootDropHandler {
@@ -46,7 +48,9 @@ public class LootDropHandler {
         if (!configList.contains(entityId.toString())) return;
 
         Vec3 sourcePos = event.getEntity().position();
-
+        List<ItemStack> droppedItems = event.getDrops().stream()
+                .map(ItemEntity::getItem)
+                .collect(Collectors.toList());
         event.getDrops().clear();
 
 
@@ -62,20 +66,12 @@ public class LootDropHandler {
                 .map(p -> (ServerPlayer) p)
                 .toList();
 
-        LootParams lootParams = new LootParams.Builder(serverLevel)
-                .withParameter(LootContextParams.THIS_ENTITY, entity)
-                .withOptionalParameter(LootContextParams.DAMAGE_SOURCE, event.getSource())
-                .withParameter(LootContextParams.ORIGIN, entity.position())
-                .create(LootContextParamSets.ENTITY);
 
 
-        LootTable lootTable = serverLevel.getServer().getLootData().getLootTable(entity.getLootTable());
-        List<ItemStack> loot = lootTable.getRandomItems(lootParams);
-
-        if (loot.isEmpty()) return;
-        for(int i = 0; i < loot.size(); i++)
+        if (droppedItems.isEmpty()) return;
+        for(int i = 0; i < droppedItems.size(); i++)
         {
-            List<ItemStack> items = Collections.singletonList(loot.get(i));
+            List<ItemStack> items = Collections.singletonList(droppedItems.get(i));
             VoteSession session = new VoteSession(items, serverPlayers, durationSeconds, sourcePos, serverLevel);
             VoteManager.addSession(session);
             for (ServerPlayer p : serverPlayers) {

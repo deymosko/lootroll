@@ -1,0 +1,11 @@
+
+[loot]
+	#List of entity IDs that should trigger loot voting (example: minecraft:warden)
+	loot_entities = ["minecraft:warden"]
+
+	[loot.vote]
+		# Duration of the vote session in seconds (default: 30)
+		vote_delay = 5
+		# Radius (in blocks) around the entity in which players can vote (default: 100)
+		vote_radius = 100
+
