@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "org.deymosko.lootroll.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "lootroll.refmap.json",
+  "mixins": [
+    "EntityDragonBaseAccessor",
+    "EntityDragonBaseMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
