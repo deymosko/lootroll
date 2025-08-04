@@ -2,6 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 
@@ -15,7 +16,9 @@ base {
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
-
+mixin {
+    add sourceSets.main, "lootroll.refmap.json"
+}
 minecraft {
     // The mappings can be changed at any time and must be in the following format.
     // Channel:   Version:
@@ -113,6 +116,9 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    flatDir {
+        dirs 'libs'
+    }
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
@@ -130,6 +136,11 @@ dependencies {
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    compileOnly fg.deobf(files("libs/output.jar"))
+    compileOnly fg.deobf(files("libs/citadel-2.6.2-1.20.1.jar"))
+    compileOnly fg.deobf(files("libs/alexscaves-2.0.2-unobf.jar"))
+    compileOnly fg.deobf(files("libs/Dungeon Now Loading-forge-1.20.1-2.0-unobf.jar"))
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -175,7 +186,8 @@ tasks.named('jar', Jar).configure {
                     "Implementation-Title"    : project.name,
                     "Implementation-Version"  : project.jar.archiveVersion,
                     "Implementation-Vendor"   : mod_authors,
-                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")])
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                    "MixinConfigs"           : "lootroll.mixins.json"])
     }
 
     // This is the preferred method to reobfuscate your jar file

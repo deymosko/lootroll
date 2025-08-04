@@ -119,7 +119,7 @@ key_key.hotbar.7:key.keyboard.7
 key_key.hotbar.8:key.keyboard.8
 key_key.hotbar.9:key.keyboard.9
 key_key.lootroll.open_vote_menu:key.keyboard.h
-soundCategory_master:0.029801324503311258
+soundCategory_master:0.014900662251655629
 soundCategory_music:0.0
 soundCategory_record:1.0
 soundCategory_weather:1.0

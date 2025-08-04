@@ -1,6 +1,7 @@
 package org.deymosko.lootroll.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -28,6 +29,11 @@ public class VoteUIEntry {
         this.items = items;
         this.endTime = endTime;
         this.timerTicks = (int)Math.ceil(Math.max(0, endTime - System.currentTimeMillis()) / 50.0);
+    }
+
+    private boolean isWithinScrollBounds(int y) {
+        int scale = (int) Minecraft.getInstance().getWindow().getGuiScale();
+        return y >= LootVoteScreen.centerY+20 && y <= LootVoteScreen.centerY+180;
     }
 
     public UUID getVoteId() {
@@ -82,7 +88,7 @@ public class VoteUIEntry {
         return timerTicks <= 0;
     }
 
-    public void render(GuiGraphics gui, int mouseX, int mouseY, Font font) {
+    public void render(GuiGraphics gui, int mouseX, int mouseY, Font font, float partialTick) {
         ItemStack stack = items.get(0);
 
         RenderSystem.setShaderTexture(0, GuiTextures.LOOTFRAME);
@@ -98,6 +104,14 @@ public class VoteUIEntry {
             gui.drawString(font, countText, itemX + 17 - font.width(countText), itemY + 10, 0xFFFFFF, true);
             gui.pose().popPose();
         }
+
+        if (isWithinScrollBounds(needButton.getY()))
+            needButton.render(gui, mouseX, mouseY, partialTick);
+        if(isWithinScrollBounds(greedButton.getY()))
+            greedButton.render(gui, mouseX, mouseY, partialTick);
+        if(isWithinScrollBounds(passButton.getY()))
+            passButton.render(gui, mouseX, mouseY, partialTick);
+
         if (mouseX >= itemX && mouseX <= itemX + 16 && mouseY >= itemY && mouseY <= itemY + 16) {
             gui.renderTooltip(font, stack, mouseX, mouseY);
         }

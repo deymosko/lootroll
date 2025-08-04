@@ -1,0 +1,16 @@
+# Forge-specific
+run/
+.gradle/
+build/
+out/
+logs/
+*.log
+*.gz
+*.tmp
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/

@@ -11,7 +11,8 @@ public class Config
     public static final ForgeConfigSpec.ConfigValue<Integer> VOTE_DURATION;
     public static final ForgeConfigSpec.ConfigValue<Integer> VOTE_RADIUS;
     public static final ForgeConfigSpec.ConfigValue<Boolean> ICE_AND_FIRE_INT;
-
+    public static final ForgeConfigSpec.ConfigValue<Boolean> ALEXS_CAVES_INT;
+    public static final ForgeConfigSpec.ConfigValue<Boolean> CHAOS_SPAWNER_INT;
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
@@ -43,7 +44,12 @@ public class Config
         ICE_AND_FIRE_INT = builder
                 .comment("Enable loot voting for Ice and Fire dragons")
                 .define("dragon_loot_voting", true);
-
+        ALEXS_CAVES_INT = builder
+                .comment("Enable loot voting for Luxtructosaurus(AlexsCaves)")
+                .define("luxtructosaurus", true);
+        CHAOS_SPAWNER_INT = builder
+                .comment("Enable loot voting for ChaosSpawner(DungeonNowLoading)")
+                .define("chaos_spawner", true);
         builder.pop();
 
 
