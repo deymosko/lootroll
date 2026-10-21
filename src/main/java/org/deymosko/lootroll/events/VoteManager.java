@@ -87,7 +87,7 @@ public class VoteManager {
                     }
                     else
                     {
-                        dropItemsToWorld(session.getItems(), session.getSourcePos(), session.getWorld());
+                               dropItemsToWorld(session.getItems(), session.getSourcePos(), session.getWorld());
                     }
                 }
                 Component itemsComponent = joinWithComma(session.getItems().stream()
