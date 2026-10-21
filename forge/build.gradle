@@ -1,0 +1,71 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+loom {
+    forge {
+        mixinConfig 'lootroll-forge.mixins.json'
+    }
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentForge.extendsFrom common
+
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    forge "net.minecraftforge:forge:$rootProject.minecraft_version-$rootProject.forge_version"
+    modImplementation "dev.architectury:architectury-forge:$rootProject.architectury_api_version"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionForge')
+
+    // Optional integrations (Forge-only mods). Dev jars with Mojang names, used only at compile time.
+    compileOnly files(
+            "$rootDir/libs/output.jar",
+            "$rootDir/libs/citadel-2.6.2-1.20.1.jar",
+            "$rootDir/libs/alexscaves-2.0.2-unobf.jar",
+            "$rootDir/libs/Dungeon Now Loading-forge-1.20.1-2.0-unobf.jar"
+    )
+}
+
+processResources {
+    def props = [
+            version          : project.version,
+            mod_id           : rootProject.mod_id,
+            mod_name         : rootProject.mod_name,
+            mod_authors      : rootProject.mod_authors,
+            mod_description  : rootProject.mod_description,
+            minecraft_version: rootProject.minecraft_version,
+            architectury_api_version: rootProject.architectury_api_version,
+    ]
+    inputs.properties props
+
+    filesMatching('META-INF/mods.toml') {
+        expand props
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+}
