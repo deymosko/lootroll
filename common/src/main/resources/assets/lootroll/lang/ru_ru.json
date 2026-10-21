@@ -3,7 +3,7 @@
   "lootroll.vote.result": "Результаты голосования за лот: %s",
   "lootroll.vote.entry": " - %s %s (%s)",
   "lootroll.vote.winner": "Победитель: %s",
-  "lootroll.vote.won": "🎉 Вы выиграли лот!",
+  "lootroll.vote.won": "Вы выиграли лот!",
   "lootroll.vote.pass": "%s пасует за %s",
   "lootroll.vote.roll": "%s бросает %s за %s (%s)",
   "lootroll.vote.already_voted": "Вы уже проголосовали",
@@ -37,5 +37,6 @@
   "lootroll.chat.vote_prompt": "Розыгрыш: %s",
   "lootroll.chat.button.need": "[Нужно]",
   "lootroll.chat.button.greed": "[Не откажусь]",
-  "lootroll.chat.button.pass": "[Отказ]"
+  "lootroll.chat.button.pass": "[Отказ]",
+  "key.lootroll.open_vote_menu": "Открыть меню розыгрыша"
 }

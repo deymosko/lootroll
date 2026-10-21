@@ -4,7 +4,7 @@
   "lootroll.vote.result": "Vote results for lot: %s",
   "lootroll.vote.entry": " - %s %s (%s)",
   "lootroll.vote.winner": "Winner: %s",
-  "lootroll.vote.won": "🎉 You won the lot!",
+  "lootroll.vote.won": "You won the lot!",
   "lootroll.vote.pass": "%s passes on %s",
   "lootroll.vote.roll": "%s rolls %s for %s (%s)",
   "lootroll.vote.already_voted": "You have already voted",
