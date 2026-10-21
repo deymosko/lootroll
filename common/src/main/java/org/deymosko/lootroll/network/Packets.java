@@ -10,6 +10,8 @@ import org.deymosko.lootroll.network.c2s.VoteC2SPacket;
 import org.deymosko.lootroll.network.s2c.VoteEndS2CPacket;
 import org.deymosko.lootroll.network.s2c.VoteStartS2CPacket;
 
+import java.util.function.Predicate;
+
 public class Packets
 {
     /** Bump whenever a packet layout changes; mismatched packets are ignored instead of crashing. */
@@ -18,6 +20,15 @@ public class Packets
     public static final ResourceLocation VOTE_START = new ResourceLocation(Lootroll.MODID, "vote_start");
     public static final ResourceLocation VOTE_END = new ResourceLocation(Lootroll.MODID, "vote_end");
     public static final ResourceLocation VOTE = new ResourceLocation(Lootroll.MODID, "vote");
+
+    // Architectury's own check only becomes true after its channel-sync handshake, which isn't
+    // reliable on Forge; loaders can replace it with a native check.
+    private static Predicate<ServerPlayer> modPresenceCheck = player -> NetworkManager.canPlayerReceive(player, VOTE_START);
+
+    public static void setModPresenceCheck(Predicate<ServerPlayer> check)
+    {
+        modPresenceCheck = check;
+    }
 
     public static void register()
     {
@@ -41,7 +52,7 @@ public class Packets
     /** Whether the player's client has LootRoll installed (and can show the vote GUI). */
     public static boolean hasMod(ServerPlayer player)
     {
-        return NetworkManager.canPlayerReceive(player, VOTE_START);
+        return modPresenceCheck.test(player);
     }
 
     public static void sendToClient(VoteStartS2CPacket message, ServerPlayer player)
@@ -56,7 +67,7 @@ public class Packets
 
     public static void sendToClient(VoteEndS2CPacket message, ServerPlayer player)
     {
-        if (!NetworkManager.canPlayerReceive(player, VOTE_END)) return;
+        if (!hasMod(player)) return;
 
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         VoteEndS2CPacket.encode(message, buf);

@@ -13,11 +13,13 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.NetworkHooks;
 import org.deymosko.lootroll.ClientConfig;
 import org.deymosko.lootroll.Config;
 import org.deymosko.lootroll.LootDropHandler;
 import org.deymosko.lootroll.Lootroll;
 import org.deymosko.lootroll.client.LootrollClient;
+import org.deymosko.lootroll.network.Packets;
 
 import java.util.List;
 
@@ -31,6 +33,8 @@ public class LootrollForge {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig.CONFIG);
 
         Lootroll.init();
+        // Treat every modded (non-vanilla) connection as having LootRoll; a modded client without it ignores the packets.
+        Packets.setModPresenceCheck(player -> !NetworkHooks.isVanillaConnection(player.connection.connection));
         EnvExecutor.runInEnv(Env.CLIENT, () -> LootrollClient::init);
 
         // LOWEST so drops added by other mods are part of the vote too.
