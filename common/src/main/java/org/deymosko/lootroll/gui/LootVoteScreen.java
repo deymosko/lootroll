@@ -1,32 +1,42 @@
 package org.deymosko.lootroll.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import org.deymosko.lootroll.ClientVoteCache;
+import org.deymosko.lootroll.client.LootrollClient;
 import org.deymosko.lootroll.enums.VoteType;
-import org.deymosko.lootroll.network.Packets;
-import org.deymosko.lootroll.network.c2s.VoteC2SPacket;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Scrollable list of every active roll. The list takes as much screen height as it needs
+ * (up to what fits), and only rows inside the visible area react to the mouse.
+ */
 public class LootVoteScreen extends Screen {
+    private static final int ROW = VoteUIEntry.HEIGHT + 4;
+    private static final int SCROLLBAR_WIDTH = 4;
+    private static final int PANEL_WIDTH = VoteUIEntry.WIDTH + 4 + SCROLLBAR_WIDTH;
+    private static final int HEADER_HEIGHT = 38;
+    private static final int MARGIN = 16;
+
     private final List<VoteUIEntry> entries = new ArrayList<>();
-    public static int centerX;
-    public static int centerY;
-    public int startY;
-    private int scrollbarX;
-    private int scrollbarY;
-    private int scrollbarHeight;
-    private int contentHeight; // висота всього списку
-    private int visibleHeight; // висота видимої частини
+
+    private int listX;
+    private int listTop;
+    private int listHeight;
+    private double scroll;
+    private double targetScroll;
     private boolean draggingScrollbar;
-    private int dragOffset = 0;
+    private double dragStartMouseY;
+    private double dragStartScroll;
+
+    private Button greedAllButton;
 
     public LootVoteScreen() {
         super(Component.translatable("screen.lootroll.vote"));
@@ -34,133 +44,171 @@ public class LootVoteScreen extends Screen {
 
     @Override
     protected void init() {
-        centerX = width / 2 - 80;
-        centerY = height / 2;
-        startY = centerY+20;
+        syncEntries();
+        layout();
 
-        reloadEntries();
-        visibleHeight = 180;
-        contentHeight = entries.size() * 50;
-
-        scrollbarX = centerX + 165;
-        scrollbarY = centerY+20;
-        scrollbarHeight = (int)((float)visibleHeight / contentHeight * visibleHeight);
+        int buttonWidth = (PANEL_WIDTH - 8) / 3;
+        int buttonY = listTop - HEADER_HEIGHT + 14;
+        addRenderableWidget(Button.builder(Component.translatable("lootroll.gui.need_all"), b -> voteAll(VoteType.NEED))
+                .bounds(listX, buttonY, buttonWidth, 20).build());
+        greedAllButton = addRenderableWidget(Button.builder(Component.translatable("lootroll.gui.greed_all"), b -> voteAll(VoteType.GREED))
+                .bounds(listX + buttonWidth + 4, buttonY, buttonWidth, 20).build());
+        addRenderableWidget(Button.builder(Component.translatable("lootroll.gui.pass_all"), b -> voteAll(VoteType.PASS))
+                .bounds(listX + 2 * (buttonWidth + 4), buttonY, buttonWidth, 20).build());
+        greedAllButton.active = entries.stream().anyMatch(VoteUIEntry::allowsGreed);
     }
 
-    private void reloadEntries() {
-        entries.clear();
-        for (UUID id : ClientVoteCache.getPendingVotes()) {
-            ClientVoteCache.VoteData data = ClientVoteCache.get(id);
-            if (data != null) {
-                VoteUIEntry entry = new VoteUIEntry(id, data);
-                entries.add(entry);
+    /** Sizes the list to its content, capped to the screen, and centres the panel. */
+    private void layout() {
+        int maxListHeight = Math.max(ROW, height - HEADER_HEIGHT - 2 * MARGIN);
+        listHeight = Mth.clamp(contentHeight(), ROW - 4, maxListHeight);
+        listX = (width - PANEL_WIDTH) / 2;
+        listTop = (height - HEADER_HEIGHT - listHeight) / 2 + HEADER_HEIGHT;
+        targetScroll = Mth.clamp(targetScroll, 0, maxScroll());
+        scroll = Mth.clamp(scroll, 0, maxScroll());
+    }
+
+    private int contentHeight() {
+        return Math.max(0, entries.size() * ROW - 4);
+    }
+
+    private double maxScroll() {
+        return Math.max(0, contentHeight() - listHeight);
+    }
+
+    /** Mirrors the client cache: drops finished rolls and appends new ones, keeping order. */
+    private void syncEntries() {
+        List<UUID> pending = List.copyOf(ClientVoteCache.getPendingVotes());
+        entries.removeIf(e -> !pending.contains(e.getVoteId()) || e.isExpired());
+        for (UUID id : pending) {
+            if (entries.stream().noneMatch(e -> e.getVoteId().equals(id))) {
+                ClientVoteCache.VoteData data = ClientVoteCache.get(id);
+                if (data != null && !data.isExpired()) {
+                    entries.add(new VoteUIEntry(id, data));
+                }
             }
         }
-        layoutEntries();
-    }
-
-    private void layoutEntries() {
-        clearWidgets();
-        int offset = 50;
-        for (int i = 0; i < entries.size(); i++) {
-            VoteUIEntry entry = entries.get(i);
-            int y = startY + i * offset;
-            entry.initButtons(centerX, y, this);
-        }
-        scrollbarHeight = (int)((float)visibleHeight / contentHeight * visibleHeight);
-    }
-
-
-    @Override
-    public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
-        renderBackground(gui);
-        if (contentHeight > 0 && contentHeight > visibleHeight) {
-            scrollbarHeight = (int)((float)visibleHeight / contentHeight * visibleHeight);
-        } else {
-            scrollbarHeight = visibleHeight;
-        }
-        Font font = Minecraft.getInstance().font;
-
-        int scissorX = centerX-80;
-        int scissorY = centerY+20;
-        int scissorWidth = 320;
-        int scissorHeight = 180;
-
-        int scale = (int) Minecraft.getInstance().getWindow().getGuiScale();
-        RenderSystem.enableScissor(
-                scissorX * scale,
-                (Minecraft.getInstance().getWindow().getHeight() - (scissorY + scissorHeight) * scale),
-                scissorWidth * scale,
-                scissorHeight * scale
-        );
-
-        for (VoteUIEntry entry : entries) {
-            entry.render(gui, mouseX, mouseY, font, partialTick);
-        }
-
-        RenderSystem.disableScissor();
-        // ---- SCROLLBAR ----
-        int barMaxY = scrollbarY + visibleHeight - scrollbarHeight;
-        int barY = scrollbarY;
-        if (contentHeight > visibleHeight) {
-            float scrollRatio = (float)(startY - centerY - 20) / (contentHeight - visibleHeight);
-            barY = scrollbarY - (int)(scrollRatio * (visibleHeight - scrollbarHeight));
-        }
-
-
-        gui.fill(scrollbarX, scrollbarY, scrollbarX + 5, scrollbarY + visibleHeight, 0xFF222222);
-
-
-        gui.fill(scrollbarX, barY, scrollbarX + 5, barY + scrollbarHeight, 0xFF888888);
-
-        super.render(gui, mouseX, mouseY, partialTick);
-    }
-
-
-    public void vote(UUID id, VoteType type) {
-        Packets.sendToServer(new VoteC2SPacket(id, type));
-        ClientVoteCache.remove(id);
-        entries.removeIf(e -> e.getVoteId().equals(id));
-        if (entries.isEmpty()) {
-            Minecraft.getInstance().setScreen(null);
-        } else {
-            layoutEntries();
-        }
-    }
-
-    @Override
-    public boolean isPauseScreen() {
-        return false;
     }
 
     @Override
     public void tick() {
-        // Expired votes are resolved by the server; just drop them here.
-        entries.removeIf(VoteUIEntry::tick);
-        // Pick up votes that started or ended while the screen was open.
-        List<UUID> shown = entries.stream().map(VoteUIEntry::getVoteId).toList();
-        if (!shown.equals(List.copyOf(ClientVoteCache.getPendingVotes()))) {
-            reloadEntries();
-        }
+        int before = entries.size();
+        syncEntries();
         if (entries.isEmpty()) {
-            Minecraft.getInstance().setScreen(null);
+            onClose();
+        } else if (entries.size() != before) {
+            rebuildWidgets();
         }
+    }
+
+    private void vote(VoteUIEntry entry, VoteType type) {
+        LootrollClient.vote(entry.getVoteId(), type);
+        entries.remove(entry);
+        afterVote();
+    }
+
+    private void voteAll(VoteType type) {
+        for (VoteUIEntry entry : List.copyOf(entries)) {
+            // Rolls without Greed keep waiting rather than being silently passed.
+            if (type == VoteType.GREED && !entry.allowsGreed()) continue;
+            LootrollClient.vote(entry.getVoteId(), type);
+            entries.remove(entry);
+        }
+        afterVote();
+    }
+
+    private void afterVote() {
+        if (entries.isEmpty()) {
+            onClose();
+        } else {
+            rebuildWidgets();
+        }
+    }
+
+    private int entryY(int index) {
+        return listTop + index * ROW - (int) Math.round(scroll);
+    }
+
+    private boolean isInList(double mouseX, double mouseY) {
+        return mouseX >= listX && mouseX < listX + VoteUIEntry.WIDTH && mouseY >= listTop && mouseY < listTop + listHeight;
+    }
+
+    /** Index of the row under the mouse, only within the visible list area; -1 if none. */
+    private int entryAt(double mouseX, double mouseY) {
+        if (!isInList(mouseX, mouseY)) return -1;
+        for (int i = 0; i < entries.size(); i++) {
+            int y = entryY(i);
+            if (mouseY >= y && mouseY < y + VoteUIEntry.HEIGHT) return i;
+        }
+        return -1;
+    }
+
+    @Override
+    public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
+        // Ease towards the scroll target for smooth wheel scrolling.
+        scroll += (targetScroll - scroll) * 0.4;
+        if (Math.abs(targetScroll - scroll) < 0.5) scroll = targetScroll;
+
+        int panelTop = listTop - HEADER_HEIGHT;
+        gui.fill(listX - 4, panelTop - 4, listX + PANEL_WIDTH + 4, listTop + listHeight + 4, 0xA0000000);
+        gui.drawCenteredString(font, Component.translatable("lootroll.gui.title", entries.size()), listX + PANEL_WIDTH / 2, panelTop + 2, 0xFFFFFF);
+
+        int hoveredIndex = entryAt(mouseX, mouseY);
+
+        gui.enableScissor(listX, listTop, listX + VoteUIEntry.WIDTH, listTop + listHeight);
+        for (int i = 0; i < entries.size(); i++) {
+            int y = entryY(i);
+            if (y + VoteUIEntry.HEIGHT < listTop || y > listTop + listHeight) continue;
+            VoteUIEntry entry = entries.get(i);
+            VoteType hovered = i == hoveredIndex ? entry.buttonAt(listX, y, mouseX, mouseY) : null;
+            entry.render(gui, font, listX, y, hovered);
+        }
+        gui.disableScissor();
+
+        renderScrollbar(gui);
+        super.render(gui, mouseX, mouseY, partialTick);
+
+        // Tooltips last and outside the scissor so they aren't clipped by the list.
+        if (hoveredIndex >= 0) {
+            entries.get(hoveredIndex).renderTooltip(gui, font, listX, entryY(hoveredIndex), mouseX, mouseY);
+        }
+    }
+
+    private void renderScrollbar(GuiGraphics gui) {
+        if (maxScroll() <= 0) return;
+        int x = listX + VoteUIEntry.WIDTH + 4;
+        gui.fill(x, listTop, x + SCROLLBAR_WIDTH, listTop + listHeight, 0xFF222222);
+        int thumbHeight = thumbHeight();
+        int thumbY = listTop + (int) ((listHeight - thumbHeight) * (scroll / maxScroll()));
+        gui.fill(x, thumbY, x + SCROLLBAR_WIDTH, thumbY + thumbHeight, draggingScrollbar ? 0xFFCCCCCC : 0xFF888888);
+    }
+
+    private int thumbHeight() {
+        return Math.max(16, (int) ((long) listHeight * listHeight / Math.max(1, contentHeight())));
+    }
+
+    private boolean isOverScrollbar(double mouseX, double mouseY) {
+        int x = listX + VoteUIEntry.WIDTH + 4;
+        return maxScroll() > 0 && mouseX >= x - 1 && mouseX < x + SCROLLBAR_WIDTH + 1 && mouseY >= listTop && mouseY < listTop + listHeight;
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(button == 0)
-        {
-            if(isOverScrollbar(mouseX, mouseY))
-            {
+        if (button == 0) {
+            if (isOverScrollbar(mouseX, mouseY)) {
                 draggingScrollbar = true;
-                dragOffset = (int) mouseY - getScrollBarY();
+                dragStartMouseY = mouseY;
+                dragStartScroll = targetScroll;
                 return true;
             }
-            for (VoteUIEntry entry : entries) {
-                if (entry.getNeedButton().mouseClicked(mouseX, mouseY, button)) return true;
-                if (entry.allowsGreed() && entry.getGreedButton().mouseClicked(mouseX, mouseY, button)) return true;
-                if (entry.getPassButton().mouseClicked(mouseX, mouseY, button)) return true;
+            int index = entryAt(mouseX, mouseY);
+            if (index >= 0) {
+                VoteUIEntry entry = entries.get(index);
+                VoteType type = entry.buttonAt(listX, entryY(index), mouseX, mouseY);
+                if (type != null) {
+                    vote(entry, type);
+                    return true;
+                }
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -169,18 +217,11 @@ public class LootVoteScreen extends Screen {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
         if (draggingScrollbar) {
-            float scrollRange = contentHeight - visibleHeight;
-            float scrollbarRange = visibleHeight - scrollbarHeight;
-            if (scrollbarRange <= 0) return true;
-
-            int newBarY = (int) mouseY - dragOffset;
-            int clampedBarY = Math.max(scrollbarY, Math.min(newBarY, scrollbarY + visibleHeight - scrollbarHeight));
-
-            float ratio = (float)(clampedBarY - scrollbarY) / scrollbarRange;
-            startY = (int)(centerY + 20 + (1.0f - ratio) * scrollRange);
-
-
-            layoutEntries();
+            double trackRange = listHeight - thumbHeight();
+            if (trackRange > 0) {
+                targetScroll = Mth.clamp(dragStartScroll + (mouseY - dragStartMouseY) * maxScroll() / trackRange, 0, maxScroll());
+                scroll = targetScroll;
+            }
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, dx, dy);
@@ -188,8 +229,7 @@ public class LootVoteScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if(button == 0 && draggingScrollbar)
-        {
+        if (button == 0 && draggingScrollbar) {
             draggingScrollbar = false;
             return true;
         }
@@ -198,33 +238,20 @@ public class LootVoteScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        int scrollAmount = (int)(delta * 12);
-
-        int minY = centerY + 20;
-        int maxY = centerY + 20 + (contentHeight - visibleHeight);
-
-        startY = Math.max(minY - (contentHeight - visibleHeight), Math.min(startY + scrollAmount, minY));
-        layoutEntries();
+        if (maxScroll() <= 0) return false;
+        targetScroll = Mth.clamp(targetScroll - delta * ROW / 2.0, 0, maxScroll());
         return true;
     }
 
     @Override
-    public void renderBackground(GuiGraphics p_283688_) {}
-
-    private boolean isOverScrollbar(double mouseX, double mouseY)
-    {
-        int barY = getScrollBarY();
-        return mouseX >= scrollbarX && mouseX <= scrollbarX + 5 &&
-                mouseY >= barY && mouseY <= barY + scrollbarHeight;
-
+    public boolean isPauseScreen() {
+        return false;
     }
-    private int getScrollBarY()
-    {
-        if(contentHeight <= visibleHeight) return scrollbarY;
 
-        float scrollbarRatio = (float)(startY - (centerY + 20)) / (contentHeight - visibleHeight);
-        return scrollbarY + (int)(scrollbarRatio * (visibleHeight - scrollbarHeight));
-    }
+    // Keep the world visible behind the list.
+    @Override
+    public void renderBackground(GuiGraphics guiGraphics) {}
+
     public static void drawScaledWrappedString(GuiGraphics guiGraphics, Font font, Component text,
                                                float screenX, float screenY, float scale,
                                                int color, int maxWidth) {

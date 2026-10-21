@@ -5,10 +5,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.Config;
+import org.deymosko.lootroll.enums.VoteType;
 import org.deymosko.lootroll.events.Participants;
 import org.deymosko.lootroll.events.VoteManager;
 import org.deymosko.lootroll.events.VoteSession;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,6 +37,18 @@ public class LootRollCommand {
                             return createLootRoll(ctx.getSource(), count);
                         }))
         );
+
+        // Target of the clickable chat buttons; also usable by hand.
+        var voteId = Commands.argument("id", UuidArgument.uuid());
+        for (VoteType type : VoteType.values()) {
+            voteId.then(Commands.literal(type.name().toLowerCase(Locale.ROOT))
+                    .executes(ctx -> {
+                        ServerPlayer player = ctx.getSource().getPlayerOrException();
+                        VoteManager.vote(UuidArgument.getUuid(ctx, "id"), player, type);
+                        return Command.SINGLE_SUCCESS;
+                    }));
+        }
+        dispatcher.register(Commands.literal("lootroll").then(Commands.literal("vote").then(voteId)));
     }
 
     private static int createLootRoll(CommandSourceStack source, int count) {

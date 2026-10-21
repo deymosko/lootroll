@@ -3,7 +3,7 @@ package org.deymosko.lootroll.network.s2c;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
-import org.deymosko.lootroll.ClientVoteCache;
+import org.deymosko.lootroll.client.LootrollClient;
 import org.deymosko.lootroll.network.Packets;
 
 import java.util.ArrayList;
@@ -56,6 +56,6 @@ public class VoteStartS2CPacket {
     public static void handle(FriendlyByteBuf buf, NetworkManager.PacketContext ctx) {
         if (!Packets.checkProtocol(buf, Packets.VOTE_START)) return;
         VoteStartS2CPacket msg = decode(buf);
-        ctx.queue(() -> ClientVoteCache.add(msg.voteId, msg.items, msg.durationTicks, msg.remainingTicks, msg.allowGreed));
+        ctx.queue(() -> LootrollClient.onVoteStart(msg.voteId, msg.items, msg.durationTicks, msg.remainingTicks, msg.allowGreed));
     }
 }

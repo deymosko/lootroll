@@ -1,6 +1,7 @@
 package org.deymosko.lootroll.events;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -58,7 +59,41 @@ public class VoteManager {
         activeVotes.put(session.getId(), session);
         VoteStartS2CPacket packet = new VoteStartS2CPacket(session.getId(), session.getItems(),
                 session.getDurationTicks(), session.getRemainingTicks(), session.isGreedAllowed());
-        forEachOnline(server, session, p -> Packets.sendToClient(packet, p));
+        forEachOnline(server, session, p -> {
+            Packets.sendToClient(packet, p);
+            if (wantsChatButtons(p)) sendChatButtons(p, session);
+        });
+    }
+
+    private static boolean wantsChatButtons(ServerPlayer player) {
+        return switch (Config.CHAT_VOTE_BUTTONS.get()) {
+            case ALWAYS -> true;
+            case CLIENTS_WITHOUT_MOD -> !Packets.hasMod(player);
+            case NEVER -> false;
+        };
+    }
+
+    private static void sendChatButtons(ServerPlayer player, VoteSession session) {
+        MutableComponent message = Component.translatable("lootroll.chat.vote_prompt", itemsComponent(session))
+                .withStyle(ChatFormatting.GOLD);
+        message.append(" ").append(chatButton(session, VoteType.NEED, ChatFormatting.GREEN));
+        if (session.isGreedAllowed()) {
+            message.append(" ").append(chatButton(session, VoteType.GREED, ChatFormatting.YELLOW));
+        }
+        message.append(" ").append(chatButton(session, VoteType.PASS, ChatFormatting.GRAY));
+        player.sendSystemMessage(message);
+    }
+
+    private static Component chatButton(VoteSession session, VoteType type, ChatFormatting color) {
+        String name = type.name().toLowerCase(Locale.ROOT);
+        String command = "/lootroll vote " + session.getId() + " " + name;
+        return Component.translatable("lootroll.chat.button." + name)
+                .withStyle(style -> style
+                        .withColor(color)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                Component.translatable("lootroll.gui.vote." + name))));
     }
 
     public static Collection<VoteSession> getActiveSessions() {
@@ -113,9 +148,9 @@ public class VoteManager {
             dropItemsToWorld(server, session);
         }
 
-        VoteEndS2CPacket endPacket = new VoteEndS2CPacket(session.getId());
         forEachOnline(server, session, p -> {
-            Packets.sendToClient(endPacket, p);
+            boolean won = winnerOpt.isPresent() && winnerOpt.get().equals(p.getUUID());
+            Packets.sendToClient(new VoteEndS2CPacket(session.getId(), won ? session.getItems() : List.of()), p);
             sendResult(p, session, winnerOpt);
         });
     }
@@ -203,6 +238,8 @@ public class VoteManager {
                     .withStyle(ChatFormatting.GREEN));
             return;
         }
+        // Removes the roll from this player's UI too when they voted through chat.
+        Packets.sendToClient(new VoteEndS2CPacket(session.getId(), List.of()), player);
         announceVote(player.getServer(), session, player.getUUID(), type);
     }
 

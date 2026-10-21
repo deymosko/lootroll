@@ -1,36 +1,35 @@
 package org.deymosko.lootroll.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.ClientVoteCache;
 import org.deymosko.lootroll.enums.VoteType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/** One roll in the vote screen: a 160x40 frame with the item, timer and Need/Greed/Pass buttons. */
 public class VoteUIEntry {
+    public static final int WIDTH = 160;
+    public static final int HEIGHT = 40;
+
+    // Button rectangles relative to the frame: x, y, width, height.
+    private static final int[] NEED = {117, 6, 16, 16};
+    private static final int[] GREED = {116, 25, 17, 10};
+    private static final int[] PASS = {139, 6, 14, 14};
+    private static final int ITEM_X = 8;
+    private static final int ITEM_Y = 10;
+
     private final UUID voteId;
-    private final List<ItemStack> items;
     private final ClientVoteCache.VoteData data;
-    private HoverableImageButton needButton;
-    private HoverableImageButton greedButton;
-    private HoverableImageButton passButton;
-    private int x;
-    private int y;
 
     public VoteUIEntry(UUID voteId, ClientVoteCache.VoteData data) {
         this.voteId = voteId;
-        this.items = data.items();
         this.data = data;
-    }
-
-    private boolean isWithinScrollBounds(int y) {
-        int scale = (int) Minecraft.getInstance().getWindow().getGuiScale();
-        return y >= LootVoteScreen.centerY+20 && y <= LootVoteScreen.centerY+180;
     }
 
     public UUID getVoteId() {
@@ -41,98 +40,83 @@ public class VoteUIEntry {
         return data.allowGreed();
     }
 
-    public HoverableImageButton getNeedButton() {
-        return needButton;
-    }
-
-    public HoverableImageButton getGreedButton() {
-        return greedButton;
-    }
-
-    public HoverableImageButton getPassButton() {
-        return passButton;
-    }
-
-    public void initButtons(int x, int y, LootVoteScreen screen) {
-        this.x = x;
-        this.y = y;
-        needButton = new HoverableImageButton(x + 117, y + 6, 16, 16,
-                GuiTextures.NEED_BUTTON, GuiTextures.NEED_BUTTON_HOVER,
-                () -> screen.vote(voteId, VoteType.NEED), "");
-        greedButton = new HoverableImageButton(x + 116, y + 25, 17, 10,
-                GuiTextures.GREED_BUTTON, GuiTextures.GREED_BUTTON_HOVER,
-                () -> screen.vote(voteId, VoteType.GREED), "");
-        passButton = new HoverableImageButton(x + 139, y + 6, 14, 14,
-                GuiTextures.PASS_BUTTON, GuiTextures.PASS_BUTTON_HOVER,
-                () -> screen.vote(voteId, VoteType.PASS), "");
-    }
-
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
-        if (needButton != null) {
-            needButton.setX(x + 117);
-            needButton.setY(y + 6);
-        }
-        if (greedButton != null) {
-            greedButton.setX(x + 116);
-            greedButton.setY(y + 25);
-        }
-        if (passButton != null) {
-            passButton.setX(x + 139);
-            passButton.setY(y + 6);
-        }
-    }
-
-    public boolean tick() {
+    public boolean isExpired() {
         return data.isExpired();
     }
 
-    public void render(GuiGraphics gui, int mouseX, int mouseY, Font font, float partialTick) {
+    /** The button under the mouse for a frame drawn at (x, y), or null. */
+    public VoteType buttonAt(int x, int y, double mouseX, double mouseY) {
+        if (inside(NEED, x, y, mouseX, mouseY)) return VoteType.NEED;
+        if (allowsGreed() && inside(GREED, x, y, mouseX, mouseY)) return VoteType.GREED;
+        if (inside(PASS, x, y, mouseX, mouseY)) return VoteType.PASS;
+        return null;
+    }
+
+    public boolean isOverItem(int x, int y, double mouseX, double mouseY) {
+        return mouseX >= x + ITEM_X && mouseX < x + ITEM_X + 16 && mouseY >= y + ITEM_Y && mouseY < y + ITEM_Y + 16;
+    }
+
+    private static boolean inside(int[] r, int x, int y, double mouseX, double mouseY) {
+        return mouseX >= x + r[0] && mouseX < x + r[0] + r[2] && mouseY >= y + r[1] && mouseY < y + r[1] + r[3];
+    }
+
+    /** @param hovered the button the mouse is over (only when the mouse is in the visible list area), or null */
+    public void render(GuiGraphics gui, Font font, int x, int y, VoteType hovered) {
+        List<ItemStack> items = data.items();
         ItemStack stack = items.get(0);
 
-        RenderSystem.setShaderTexture(0, GuiTextures.LOOTFRAME);
-        gui.blit(GuiTextures.LOOTFRAME, x, y, 0, 0, 160, 40, 160, 40);
+        gui.blit(GuiTextures.LOOTFRAME, x, y, 0, 0, WIDTH, HEIGHT, WIDTH, HEIGHT);
 
-        int itemX = x + 8;
-        int itemY = y + 10;
-        gui.renderItem(stack, itemX, itemY);
-        if (stack.getCount() > 1) {
-            String countText = String.valueOf(stack.getCount());
-            gui.pose().pushPose();
-            gui.pose().translate(0, 0, 300);
-            gui.drawString(font, countText, itemX + 17 - font.width(countText), itemY + 10, 0xFFFFFF, true);
-            gui.pose().popPose();
-        }
+        gui.renderItem(stack, x + ITEM_X, y + ITEM_Y);
+        gui.renderItemDecorations(font, stack, x + ITEM_X, y + ITEM_Y);
 
-        if (isWithinScrollBounds(needButton.getY()))
-            needButton.render(gui, mouseX, mouseY, partialTick);
-        if(data.allowGreed() && isWithinScrollBounds(greedButton.getY()))
-            greedButton.render(gui, mouseX, mouseY, partialTick);
-        if(isWithinScrollBounds(passButton.getY()))
-            passButton.render(gui, mouseX, mouseY, partialTick);
+        Component name = items.size() > 1
+                ? Component.translatable("lootroll.gui.lot", stack.getHoverName(), items.size() - 1)
+                : stack.getHoverName();
+        LootVoteScreen.drawScaledWrappedString(gui, font, name, x + 33, y + 9, 0.7f, rarityColor(stack), 80);
 
-        if (mouseX >= itemX && mouseX <= itemX + 16 && mouseY >= itemY && mouseY <= itemY + 16) {
-            gui.renderTooltip(font, stack, mouseX, mouseY);
-        }
-        LootVoteScreen.drawScaledWrappedString(gui, font, stack.getDisplayName(), x + 33, y + 9, 0.7f, 0xFFFFFF, 80);
         drawProgressBar(gui, data.progress(), x + 6, y + 33, 104, 5);
 
-        if (needButton.isMouseOver(mouseX, mouseY)) {
-            gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.need"), mouseX, mouseY);
-        } else if (data.allowGreed() && greedButton.isMouseOver(mouseX, mouseY)) {
-            gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.greed"), mouseX, mouseY);
-        } else if (passButton.isMouseOver(mouseX, mouseY)) {
-            gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.pass"), mouseX, mouseY);
+        button(gui, NEED, x, y, hovered == VoteType.NEED ? GuiTextures.NEED_BUTTON_HOVER : GuiTextures.NEED_BUTTON);
+        if (allowsGreed()) {
+            button(gui, GREED, x, y, hovered == VoteType.GREED ? GuiTextures.GREED_BUTTON_HOVER : GuiTextures.GREED_BUTTON);
+        }
+        button(gui, PASS, x, y, hovered == VoteType.PASS ? GuiTextures.PASS_BUTTON_HOVER : GuiTextures.PASS_BUTTON);
+    }
+
+    /** Tooltip for the hovered part of the frame; draw outside any scissor. */
+    public void renderTooltip(GuiGraphics gui, Font font, int x, int y, int mouseX, int mouseY) {
+        VoteType button = buttonAt(x, y, mouseX, mouseY);
+        if (button != null) {
+            gui.renderTooltip(font, Component.translatable("lootroll.gui.vote." + button.name().toLowerCase()), mouseX, mouseY);
+        } else if (isOverItem(x, y, mouseX, mouseY)) {
+            List<ItemStack> items = data.items();
+            if (items.size() == 1) {
+                gui.renderTooltip(font, items.get(0), mouseX, mouseY);
+            } else {
+                List<Component> lines = new ArrayList<>();
+                for (ItemStack s : items) {
+                    lines.add(Component.literal(s.getCount() + "x ").append(s.getHoverName()).withStyle(s.getRarity().color));
+                }
+                gui.renderComponentTooltip(font, lines, mouseX, mouseY);
+            }
         }
     }
 
-    private void drawProgressBar(GuiGraphics graphics, float progress, int x, int y, int width, int height) {
+    private static void button(GuiGraphics gui, int[] r, int x, int y, ResourceLocation texture) {
+        gui.blit(texture, x + r[0], y + r[1], 0, 0, r[2], r[3], r[2], r[3]);
+    }
+
+    public static int rarityColor(ItemStack stack) {
+        Integer color = stack.getRarity().color.getColor();
+        return color != null ? color : 0xFFFFFF;
+    }
+
+    private static void drawProgressBar(GuiGraphics graphics, float progress, int x, int y, int width, int height) {
         progress = Math.min(Math.max(progress, 0.0f), 1.0f);
         int filledWidth = (int) (width * progress);
 
         if (filledWidth > 0) {
-            RenderSystem.setShaderTexture(0, GuiTextures.TIMER_PROGRESS_BAR);
             graphics.blit(GuiTextures.TIMER_PROGRESS_BAR,
                     x, y,
                     0, 0,

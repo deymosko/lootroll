@@ -13,6 +13,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.deymosko.lootroll.ClientConfig;
 import org.deymosko.lootroll.Config;
 import org.deymosko.lootroll.LootDropHandler;
 import org.deymosko.lootroll.Lootroll;
@@ -27,6 +28,7 @@ public class LootrollForge {
     {
         EventBuses.registerModEventBus(Lootroll.MODID, FMLJavaModLoadingContext.get().getModEventBus());
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.CONFIG);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig.CONFIG);
 
         Lootroll.init();
         EnvExecutor.runInEnv(Env.CLIENT, () -> LootrollClient::init);

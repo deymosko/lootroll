@@ -23,9 +23,10 @@ public class ClientVoteCache {
 
     private static final Map<UUID, VoteData> voteQueue = new LinkedHashMap<>();
 
-    public static void add(UUID id, List<ItemStack> items, int durationTicks, int remainingTicks, boolean allowGreed) {
+    /** @return false if this vote was already known */
+    public static boolean add(UUID id, List<ItemStack> items, int durationTicks, int remainingTicks, boolean allowGreed) {
         long now = System.currentTimeMillis();
-        voteQueue.putIfAbsent(id, new VoteData(items, now + remainingTicks * 50L, durationTicks * 50L, allowGreed));
+        return voteQueue.putIfAbsent(id, new VoteData(items, now + remainingTicks * 50L, durationTicks * 50L, allowGreed)) == null;
     }
 
     public static void remove(UUID id) {
@@ -52,6 +53,11 @@ public class ClientVoteCache {
 
     public static boolean hasVote() {
         return !voteQueue.isEmpty();
+    }
+
+    /** The oldest active vote, shown first in the HUD; null if none. */
+    public static UUID getFirst() {
+        return voteQueue.isEmpty() ? null : voteQueue.keySet().iterator().next();
     }
 
     public static int size() {

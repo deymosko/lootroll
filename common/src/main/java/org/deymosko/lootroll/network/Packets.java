@@ -13,7 +13,7 @@ import org.deymosko.lootroll.network.s2c.VoteStartS2CPacket;
 public class Packets
 {
     /** Bump whenever a packet layout changes; mismatched packets are ignored instead of crashing. */
-    public static final int PROTOCOL_VERSION = 3;
+    public static final int PROTOCOL_VERSION = 4;
 
     public static final ResourceLocation VOTE_START = new ResourceLocation(Lootroll.MODID, "vote_start");
     public static final ResourceLocation VOTE_END = new ResourceLocation(Lootroll.MODID, "vote_end");
@@ -38,10 +38,16 @@ public class Packets
         NetworkManager.sendToServer(VOTE, buf);
     }
 
+    /** Whether the player's client has LootRoll installed (and can show the vote GUI). */
+    public static boolean hasMod(ServerPlayer player)
+    {
+        return NetworkManager.canPlayerReceive(player, VOTE_START);
+    }
+
     public static void sendToClient(VoteStartS2CPacket message, ServerPlayer player)
     {
         // Players without the mod installed simply don't get the GUI.
-        if (!NetworkManager.canPlayerReceive(player, VOTE_START)) return;
+        if (!hasMod(player)) return;
 
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         VoteStartS2CPacket.encode(message, buf);

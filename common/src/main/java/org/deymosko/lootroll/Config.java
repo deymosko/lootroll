@@ -11,6 +11,7 @@ public class Config
     public enum OfflineWinnerAction { DELIVER_ON_LOGIN, NEXT_HIGHEST_ROLL, DROP_ON_GROUND }
     public enum ChatMessages { ALL, RESULTS_ONLY, NONE }
     public enum VoteMode { PER_STACK, PER_ITEM, WHOLE_LOT }
+    public enum ChatButtons { ALWAYS, CLIENTS_WITHOUT_MOD, NEVER }
 
     public static final ForgeConfigSpec CONFIG;
 
@@ -38,6 +39,7 @@ public class Config
     public static final ForgeConfigSpec.EnumValue<NoWinnerAction> NO_WINNER_ACTION;
     public static final ForgeConfigSpec.EnumValue<OfflineWinnerAction> OFFLINE_WINNER_ACTION;
     public static final ForgeConfigSpec.EnumValue<ChatMessages> CHAT_MESSAGES;
+    public static final ForgeConfigSpec.EnumValue<ChatButtons> CHAT_VOTE_BUTTONS;
 
     // commands
     public static final ForgeConfigSpec.IntValue STARTVOTE_PERMISSION_LEVEL;
@@ -139,6 +141,12 @@ public class Config
         CHAT_MESSAGES = builder
                 .comment("Chat output: ALL (every vote and the results), RESULTS_ONLY, NONE")
                 .defineEnum("chat_messages", ChatMessages.ALL);
+        CHAT_VOTE_BUTTONS = builder
+                .comment("Post clickable [Need] [Greed] [Pass] buttons in chat when a roll starts",
+                        "ALWAYS - for everyone",
+                        "CLIENTS_WITHOUT_MOD - only for players who don't have LootRoll installed (lets vanilla clients vote)",
+                        "NEVER - GUI only")
+                .defineEnum("chat_vote_buttons", ChatButtons.CLIENTS_WITHOUT_MOD);
         builder.pop();
 
 
