@@ -48,24 +48,12 @@ public abstract class EntityLuxtructosaurusMixin
                         entity.level().addAlwaysVisibleParticle(ACParticleRegistry.LUXTRUCTOSAURUS_ASH.get(), true, entity.getX(), entity.getY(), entity.getZ(), entity.getId(), 0, 0);
                     }
                 }
-                if (entity.getAnimationTick() > 110 && !entity.level().isClientSide() & !entity.isRemoved()) {
+                if (entity.getAnimationTick() > 110 && !entity.level().isClientSide() && !entity.isRemoved()) {
                     if (!this.getDeathItems().isEmpty()) {
-                        ItemStack currentStack = ItemStack.EMPTY;
-                        while (!this.getDeathItems().isEmpty() || !currentStack.isEmpty()) {
-                            if (currentStack.isEmpty()) {
-                                currentStack = getDeathItems().remove(0);
-                            }
-                            if (currentStack.getCount() > 0) {
-                                ItemStack one = currentStack.copy();
-                                one.setCount(1);
-                                currentStack.shrink(1);
-                                List<ItemStack> drops = new ArrayList<>();
-                                drops.add(one);
-                                LootDropHandler.startVoteSession(drops, entity);
-                                drops.clear();
-                            }
-                        }
-
+                        // The whole death loot becomes one lot; vote_mode decides how it is split.
+                        List<ItemStack> drops = new ArrayList<>(this.getDeathItems());
+                        this.getDeathItems().clear();
+                        LootDropHandler.startVoteSession(drops, entity);
                     }
                     entity.level().broadcastEntityEvent(entity, (byte) 60);
                     entity.remove(Entity.RemovalReason.KILLED);

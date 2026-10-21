@@ -10,6 +10,7 @@ public class Config
     public enum NoWinnerAction { DROP_ON_GROUND, GIVE_RANDOM_PARTICIPANT }
     public enum OfflineWinnerAction { DELIVER_ON_LOGIN, NEXT_HIGHEST_ROLL, DROP_ON_GROUND }
     public enum ChatMessages { ALL, RESULTS_ONLY, NONE }
+    public enum VoteMode { PER_STACK, PER_ITEM, WHOLE_LOT }
 
     public static final ForgeConfigSpec CONFIG;
 
@@ -18,6 +19,11 @@ public class Config
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ITEM_BLACKLIST;
     public static final ForgeConfigSpec.EnumValue<Rarity> MIN_RARITY;
     public static final ForgeConfigSpec.IntValue MIN_PLAYERS;
+    public static final ForgeConfigSpec.EnumValue<VoteMode> VOTE_MODE;
+    public static final ForgeConfigSpec.BooleanValue MERGE_STACKS;
+    public static final ForgeConfigSpec.BooleanValue CAPTURE_NEARBY_DROPS;
+    public static final ForgeConfigSpec.DoubleValue CAPTURE_RADIUS;
+    public static final ForgeConfigSpec.IntValue CAPTURE_WINDOW;
 
     // vote
     public static final ForgeConfigSpec.ConfigValue<Integer> VOTE_DURATION;
@@ -66,6 +72,27 @@ public class Config
                 .comment("Minimum number of eligible players for a vote to start. With fewer, loot simply drops on the ground.",
                         "1 = vote even when playing alone")
                 .defineInRange("min_players", 1, 1, 100);
+        VOTE_MODE = builder
+                .comment("How a mob's loot is split into votes",
+                        "PER_STACK - one vote per item stack (5 diamonds = one vote)",
+                        "PER_ITEM - one vote per single item (5 diamonds = five votes)",
+                        "WHOLE_LOT - one vote for everything the mob dropped")
+                .defineEnum("vote_mode", VoteMode.PER_STACK);
+        MERGE_STACKS = builder
+                .comment("Merge identical items from the same mob into one stack before voting")
+                .define("merge_identical_stacks", true);
+        CAPTURE_NEARBY_DROPS = builder
+                .comment("Also capture items that appear around a tracked mob while it is dying.",
+                        "Catches bosses that drop loot their own way (after a death animation, one by one, etc.)",
+                        "instead of through the normal death drops. Items thrown by players are never captured.")
+                .define("capture_nearby_drops", true);
+        CAPTURE_RADIUS = builder
+                .comment("Distance in blocks around the dying mob's hitbox in which spawned items are captured")
+                .defineInRange("capture_radius", 4.0, 0.0, 64.0);
+        CAPTURE_WINDOW = builder
+                .comment("Longest time in seconds to keep capturing drops after a tracked mob dies",
+                        "(capturing also stops shortly after the mob's body disappears)")
+                .defineInRange("capture_window", 30, 1, 600);
         builder.pop();
 
 

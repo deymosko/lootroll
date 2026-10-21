@@ -3,12 +3,12 @@ package org.deymosko.lootroll.events;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.deymosko.lootroll.Config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public final class Participants {
 
@@ -27,20 +27,22 @@ public final class Participants {
                 .toList();
     }
 
-    /** Players eligible for the loot of a dead entity, applying the vote config. */
-    public static List<ServerPlayer> forDeath(LivingEntity entity) {
-        ServerLevel level = (ServerLevel) entity.level();
-        List<ServerPlayer> result = new ArrayList<>(around(level, entity.position(), Config.VOTE_RADIUS.get()));
+    /**
+     * Players eligible for a mob's loot, applying the vote config.
+     * @param source the mob, used for the line-of-sight check
+     * @param killer UUID of whoever got the kill, or null
+     */
+    public static List<ServerPlayer> forLoot(ServerLevel level, Vec3 pos, Entity source, UUID killer) {
+        List<ServerPlayer> result = new ArrayList<>(around(level, pos, Config.VOTE_RADIUS.get()));
 
-        if (Config.REQUIRE_LINE_OF_SIGHT.get()) {
-            result.removeIf(p -> !p.hasLineOfSight(entity));
+        if (Config.REQUIRE_LINE_OF_SIGHT.get() && source != null && !source.isRemoved()) {
+            result.removeIf(p -> !p.hasLineOfSight(source));
         }
 
-        if (Config.INCLUDE_KILLER.get()) {
-            Entity killer = entity.getKillCredit();
-            if (killer instanceof ServerPlayer player && player.level() == level && !player.isSpectator() && !result.contains(player)) {
-                result.add(player);
-            }
+        if (Config.INCLUDE_KILLER.get() && killer != null
+                && level.getPlayerByUUID(killer) instanceof ServerPlayer player
+                && !player.isSpectator() && !result.contains(player)) {
+            result.add(player);
         }
         return result;
     }
