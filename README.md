@@ -106,7 +106,6 @@ anchor = "CENTER_RIGHT"   # TOP_LEFT, TOP_CENTER, TOP_RIGHT, CENTER_LEFT, CENTER
 offset_x = 0
 offset_y = 0
 max_frames = 3
-key_hints = true
 
 [notifications]
 play_sound = true

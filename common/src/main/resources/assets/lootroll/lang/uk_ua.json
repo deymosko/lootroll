@@ -27,7 +27,6 @@
   "key.lootroll.vote_greed": "«Не відмовлюсь» на верхній лот",
   "key.lootroll.vote_pass": "Відмова на верхній лот",
   "lootroll.hud.more": "ще +%s",
-  "lootroll.hud.all": "Усі",
   "lootroll.gui.title": "Розіграш здобичі (%s)",
   "lootroll.gui.lot": "%s +%s",
   "lootroll.gui.need_all": "Усе потрібно",

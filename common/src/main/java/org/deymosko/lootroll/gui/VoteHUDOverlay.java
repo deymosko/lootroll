@@ -2,16 +2,13 @@ package org.deymosko.lootroll.gui;
 
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.ClientConfig;
 import org.deymosko.lootroll.ClientVoteCache;
-import org.deymosko.lootroll.events.input.Keybinds;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +16,7 @@ import java.util.UUID;
 
 /**
  * WoW-style roll frames on the HUD: one compact card per active roll with the item,
- * a shrinking timer bar and the hotkeys to vote on the top card without opening a screen.
+ * a shrinking timer bar; the top card is the one the vote hotkeys act on.
  */
 public class VoteHUDOverlay {
     private static final int FRAME_WIDTH = 150;
@@ -40,9 +37,6 @@ public class VoteHUDOverlay {
         List<Component> footer = new ArrayList<>();
         if (hidden > 0) {
             footer.add(Component.translatable("lootroll.hud.more", hidden).withStyle(ChatFormatting.GRAY));
-        }
-        if (ClientConfig.HUD_KEY_HINTS.get()) {
-            footer.add(keyHints(ClientVoteCache.get(ids.get(0))));
         }
 
         int totalHeight = shown * (FRAME_HEIGHT + GAP) + footer.size() * (font.lineHeight + 1);
@@ -107,21 +101,5 @@ public class VoteHUDOverlay {
         int red = (int) (255 * Math.min(1.0f, 2.0f * (1.0f - progress)));
         int green = (int) (255 * Math.min(1.0f, 2.0f * progress));
         return 0xFF000000 | (red << 16) | (green << 8) | 0x20;
-    }
-
-    private static Component keyHints(ClientVoteCache.VoteData top) {
-        MutableComponent hints = Component.empty().withStyle(ChatFormatting.GRAY);
-        hint(hints, Keybinds.voteNeed, "lootroll.gui.vote.need");
-        if (top != null && top.allowGreed()) hint(hints, Keybinds.voteGreed, "lootroll.gui.vote.greed");
-        hint(hints, Keybinds.votePass, "lootroll.gui.vote.pass");
-        hint(hints, Keybinds.openVoteMenu, "lootroll.hud.all");
-        return hints;
-    }
-
-    private static void hint(MutableComponent hints, KeyMapping key, String label) {
-        if (key.isUnbound()) return;
-        if (!hints.getSiblings().isEmpty()) hints.append("  ");
-        hints.append(Component.literal("[").append(key.getTranslatedKeyMessage()).append("] ").withStyle(ChatFormatting.WHITE))
-                .append(Component.translatable(label));
     }
 }

@@ -28,7 +28,6 @@
   "key.lootroll.vote_greed": "Greed on top roll",
   "key.lootroll.vote_pass": "Pass on top roll",
   "lootroll.hud.more": "+%s more",
-  "lootroll.hud.all": "All",
   "lootroll.gui.title": "Loot rolls (%s)",
   "lootroll.gui.lot": "%s +%s",
   "lootroll.gui.need_all": "Need all",

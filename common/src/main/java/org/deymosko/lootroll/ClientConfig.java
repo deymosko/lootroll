@@ -14,7 +14,6 @@ public class ClientConfig
     public static final ForgeConfigSpec.IntValue HUD_OFFSET_X;
     public static final ForgeConfigSpec.IntValue HUD_OFFSET_Y;
     public static final ForgeConfigSpec.IntValue HUD_MAX_FRAMES;
-    public static final ForgeConfigSpec.BooleanValue HUD_KEY_HINTS;
 
     public static final ForgeConfigSpec.BooleanValue PLAY_SOUND;
     public static final ForgeConfigSpec.BooleanValue OPEN_SCREEN_ON_VOTE;
@@ -39,9 +38,6 @@ public class ClientConfig
         HUD_MAX_FRAMES = builder
                 .comment("How many rolls are shown at once; the rest are summarised as \"+N more\"")
                 .defineInRange("max_frames", 3, 1, 10);
-        HUD_KEY_HINTS = builder
-                .comment("Show the vote hotkeys under the roll frames")
-                .define("key_hints", true);
         builder.pop();
 
         builder.push("notifications");
