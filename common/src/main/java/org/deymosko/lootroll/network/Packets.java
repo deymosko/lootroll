@@ -13,7 +13,7 @@ import org.deymosko.lootroll.network.s2c.VoteStartS2CPacket;
 public class Packets
 {
     /** Bump whenever a packet layout changes; mismatched packets are ignored instead of crashing. */
-    public static final int PROTOCOL_VERSION = 2;
+    public static final int PROTOCOL_VERSION = 3;
 
     public static final ResourceLocation VOTE_START = new ResourceLocation(Lootroll.MODID, "vote_start");
     public static final ResourceLocation VOTE_END = new ResourceLocation(Lootroll.MODID, "vote_end");

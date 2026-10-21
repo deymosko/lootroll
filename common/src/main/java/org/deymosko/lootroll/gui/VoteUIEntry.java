@@ -37,6 +37,10 @@ public class VoteUIEntry {
         return voteId;
     }
 
+    public boolean allowsGreed() {
+        return data.allowGreed();
+    }
+
     public HoverableImageButton getNeedButton() {
         return needButton;
     }
@@ -103,7 +107,7 @@ public class VoteUIEntry {
 
         if (isWithinScrollBounds(needButton.getY()))
             needButton.render(gui, mouseX, mouseY, partialTick);
-        if(isWithinScrollBounds(greedButton.getY()))
+        if(data.allowGreed() && isWithinScrollBounds(greedButton.getY()))
             greedButton.render(gui, mouseX, mouseY, partialTick);
         if(isWithinScrollBounds(passButton.getY()))
             passButton.render(gui, mouseX, mouseY, partialTick);
@@ -116,7 +120,7 @@ public class VoteUIEntry {
 
         if (needButton.isMouseOver(mouseX, mouseY)) {
             gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.need"), mouseX, mouseY);
-        } else if (greedButton.isMouseOver(mouseX, mouseY)) {
+        } else if (data.allowGreed() && greedButton.isMouseOver(mouseX, mouseY)) {
             gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.greed"), mouseX, mouseY);
         } else if (passButton.isMouseOver(mouseX, mouseY)) {
             gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.pass"), mouseX, mouseY);

@@ -6,14 +6,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.deymosko.lootroll.Config;
 import org.deymosko.lootroll.enums.VoteType;
 
 import java.util.*;
 
 public class VoteSession {
-    public static final int ROLL_MIN = 1;
-    public static final int ROLL_MAX = 100;
-
     private final UUID sessionId = UUID.randomUUID();
     private final List<ItemStack> items;
     // Stored by UUID so a player who relogs mid-vote is still the same participant.
@@ -28,6 +26,11 @@ public class VoteSession {
     private final Vec3 sourcePos;
     private final ResourceKey<Level> dimension;
     private final RandomSource random;
+    // Snapshot of the config when the vote started, so a reload mid-vote can't change the rules.
+    private final int rollMin;
+    private final int rollMax;
+    private final boolean allowGreed;
+    private final boolean endWhenAllVoted;
     private Optional<UUID> winner;
 
     public VoteSession(List<ItemStack> items, List<ServerPlayer> participants, int durationSeconds, Vec3 sourcePos, Level world) {
@@ -45,6 +48,10 @@ public class VoteSession {
         this.sourcePos = sourcePos;
         this.dimension = world.dimension();
         this.random = world.getRandom();
+        this.rollMin = Config.ROLL_MIN.get();
+        this.rollMax = Math.max(rollMin, Config.ROLL_MAX.get());
+        this.allowGreed = Config.ALLOW_GREED.get();
+        this.endWhenAllVoted = Config.END_WHEN_ALL_VOTED.get();
     }
 
     public UUID getInitiatorId() {
@@ -79,9 +86,14 @@ public class VoteSession {
         return votes.containsKey(playerId);
     }
 
+    public boolean isGreedAllowed() {
+        return allowGreed;
+    }
+
     /** @return false if the player isn't a participant or has already voted. */
     public boolean vote(UUID playerId, VoteType vote) {
         if (!isParticipant(playerId) || votes.containsKey(playerId) || winner != null) return false;
+        if (vote == VoteType.GREED && !allowGreed) return false;
 
         votes.put(playerId, vote);
         if (vote == VoteType.NEED || vote == VoteType.GREED) {
@@ -91,7 +103,7 @@ public class VoteSession {
     }
 
     private int roll() {
-        return random.nextIntBetweenInclusive(ROLL_MIN, ROLL_MAX);
+        return random.nextIntBetweenInclusive(rollMin, rollMax);
     }
 
     public void tick() {
@@ -104,7 +116,7 @@ public class VoteSession {
     }
 
     public boolean isFinished() {
-        return remainingTicks <= 0 || votes.size() >= participants.size();
+        return remainingTicks <= 0 || (endWhenAllVoted && votes.size() >= participants.size());
     }
 
     /** Resolved once; later calls return the same winner. */
@@ -147,6 +159,23 @@ public class VoteSession {
         }
 
         return contenders.isEmpty() ? Optional.empty() : Optional.of(contenders.get(0));
+    }
+
+    /** Voters of the winning group (Need, else Greed), best roll first, ignoring tie-break rounds. */
+    public List<UUID> getRankedCandidates() {
+        List<UUID> group = getVoters(VoteType.NEED);
+        if (group.isEmpty()) group = getVoters(VoteType.GREED);
+        List<UUID> ranked = new ArrayList<>(group);
+        ranked.sort(Comparator.comparingInt((UUID id) -> rolls.getOrDefault(id, 0)).reversed());
+        getWinner().ifPresent(w -> {
+            ranked.remove(w);
+            ranked.add(0, w);
+        });
+        return ranked;
+    }
+
+    public RandomSource getRandom() {
+        return random;
     }
 
     private static List<UUID> topOf(List<UUID> group, Map<UUID, Integer> scores) {

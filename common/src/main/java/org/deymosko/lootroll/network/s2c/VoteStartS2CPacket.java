@@ -17,13 +17,15 @@ public class VoteStartS2CPacket {
     private final List<ItemStack> items;
     private final int durationTicks;
     private final int remainingTicks;
+    private final boolean allowGreed;
 
     // Durations are sent instead of a timestamp, so client and server clocks don't have to agree.
-    public VoteStartS2CPacket(UUID voteId, List<ItemStack> items, int durationTicks, int remainingTicks) {
+    public VoteStartS2CPacket(UUID voteId, List<ItemStack> items, int durationTicks, int remainingTicks, boolean allowGreed) {
         this.voteId = voteId;
         this.items = items;
         this.durationTicks = durationTicks;
         this.remainingTicks = remainingTicks;
+        this.allowGreed = allowGreed;
     }
 
     public static void encode(VoteStartS2CPacket msg, FriendlyByteBuf buf) {
@@ -35,6 +37,7 @@ public class VoteStartS2CPacket {
         }
         buf.writeVarInt(msg.durationTicks);
         buf.writeVarInt(msg.remainingTicks);
+        buf.writeBoolean(msg.allowGreed);
     }
 
     public static VoteStartS2CPacket decode(FriendlyByteBuf buf) {
@@ -46,12 +49,13 @@ public class VoteStartS2CPacket {
         }
         int durationTicks = buf.readVarInt();
         int remainingTicks = buf.readVarInt();
-        return new VoteStartS2CPacket(voteId, items, durationTicks, remainingTicks);
+        boolean allowGreed = buf.readBoolean();
+        return new VoteStartS2CPacket(voteId, items, durationTicks, remainingTicks, allowGreed);
     }
 
     public static void handle(FriendlyByteBuf buf, NetworkManager.PacketContext ctx) {
         if (!Packets.checkProtocol(buf, Packets.VOTE_START)) return;
         VoteStartS2CPacket msg = decode(buf);
-        ctx.queue(() -> ClientVoteCache.add(msg.voteId, msg.items, msg.durationTicks, msg.remainingTicks));
+        ctx.queue(() -> ClientVoteCache.add(msg.voteId, msg.items, msg.durationTicks, msg.remainingTicks, msg.allowGreed));
     }
 }

@@ -159,7 +159,7 @@ public class LootVoteScreen extends Screen {
             }
             for (VoteUIEntry entry : entries) {
                 if (entry.getNeedButton().mouseClicked(mouseX, mouseY, button)) return true;
-                if (entry.getGreedButton().mouseClicked(mouseX, mouseY, button)) return true;
+                if (entry.allowsGreed() && entry.getGreedButton().mouseClicked(mouseX, mouseY, button)) return true;
                 if (entry.getPassButton().mouseClicked(mouseX, mouseY, button)) return true;
             }
         }

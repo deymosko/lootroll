@@ -3,7 +3,6 @@ package org.deymosko.lootroll.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -12,9 +11,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
+import org.deymosko.lootroll.Config;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RollCommand {
@@ -58,7 +56,7 @@ public class RollCommand {
 
         ServerLevel level = sender.serverLevel();
         TargetingConditions conditions = TargetingConditions.forNonCombat().ignoreLineOfSight();
-        List<Player> nearbyPlayers = level.getNearbyPlayers(conditions, sender, sender.getBoundingBox().inflate(100.0d));
+        List<Player> nearbyPlayers = level.getNearbyPlayers(conditions, sender, sender.getBoundingBox().inflate(Config.ROLL_COMMAND_RADIUS.get()));
 
         Component msg = Component
                 .translatable("player.roll.result", sender.getName().getString(), rollRes, min, max)

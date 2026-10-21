@@ -9,9 +9,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
+import org.deymosko.lootroll.Config;
+import org.deymosko.lootroll.LootDropHandler;
 import org.deymosko.lootroll.enums.VoteType;
 import org.deymosko.lootroll.network.Packets;
 import org.deymosko.lootroll.network.s2c.VoteEndS2CPacket;
@@ -57,7 +57,7 @@ public class VoteManager {
     public static void startSession(VoteSession session, MinecraftServer server) {
         activeVotes.put(session.getId(), session);
         VoteStartS2CPacket packet = new VoteStartS2CPacket(session.getId(), session.getItems(),
-                session.getDurationTicks(), session.getRemainingTicks());
+                session.getDurationTicks(), session.getRemainingTicks(), session.isGreedAllowed());
         forEachOnline(server, session, p -> Packets.sendToClient(packet, p));
     }
 
@@ -86,7 +86,7 @@ public class VoteManager {
     }
 
     private static void finish(MinecraftServer server, VoteSession session) {
-        Optional<UUID> winnerOpt = session.getWinner();
+        Optional<UUID> winnerOpt = resolveRecipient(server, session);
 
         if (winnerOpt.isPresent()) {
             UUID winner = winnerOpt.get();
@@ -96,6 +96,8 @@ public class VoteManager {
                 player.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0f, 1.0f);
                 player.displayClientMessage(Component.translatable("lootroll.vote.won")
                         .withStyle(ChatFormatting.GREEN), false);
+            } else if (Config.OFFLINE_WINNER_ACTION.get() == Config.OfflineWinnerAction.DROP_ON_GROUND) {
+                dropItemsToWorld(server, session);
             } else {
                 PendingLoot.get(server).add(winner, session.getItems());
             }
@@ -118,7 +120,37 @@ public class VoteManager {
         });
     }
 
+    /**
+     * Who actually gets the items: the vote winner, adjusted by the offline/no-winner config.
+     * Empty means the items go back to the /startvote initiator or onto the ground.
+     */
+    private static Optional<UUID> resolveRecipient(MinecraftServer server, VoteSession session) {
+        Optional<UUID> winner = session.getWinner();
+
+        if (winner.isPresent()) {
+            boolean online = server.getPlayerList().getPlayer(winner.get()) != null;
+            if (!online && Config.OFFLINE_WINNER_ACTION.get() == Config.OfflineWinnerAction.NEXT_HIGHEST_ROLL) {
+                for (UUID candidate : session.getRankedCandidates()) {
+                    if (server.getPlayerList().getPlayer(candidate) != null) return Optional.of(candidate);
+                }
+            }
+            return winner;
+        }
+
+        if (session.getInitiatorId() == null && Config.NO_WINNER_ACTION.get() == Config.NoWinnerAction.GIVE_RANDOM_PARTICIPANT) {
+            List<UUID> online = session.getParticipants().stream()
+                    .filter(id -> server.getPlayerList().getPlayer(id) != null)
+                    .toList();
+            if (!online.isEmpty()) {
+                return Optional.of(online.get(session.getRandom().nextInt(online.size())));
+            }
+        }
+        return Optional.empty();
+    }
+
     private static void sendResult(ServerPlayer p, VoteSession session, Optional<UUID> winnerOpt) {
+        if (Config.CHAT_MESSAGES.get() == Config.ChatMessages.NONE) return;
+
         Component itemsComponent = itemsComponent(session);
         p.sendSystemMessage(Component.translatable("lootroll.vote.result", itemsComponent)
                 .withStyle(ChatFormatting.GREEN));
@@ -130,6 +162,9 @@ public class VoteManager {
         if (displayType == VoteType.PASS) {
             p.sendSystemMessage(Component.translatable("lootroll.vote.unwanted", itemsComponent)
                     .withStyle(ChatFormatting.GREEN));
+            winnerOpt.ifPresent(win -> p.sendSystemMessage(Component.translatable("lootroll.vote.winner",
+                            Component.literal(session.getName(win)).withStyle(ChatFormatting.YELLOW))
+                    .withStyle(ChatFormatting.GREEN)));
             return;
         }
 
@@ -172,6 +207,8 @@ public class VoteManager {
     }
 
     private static void announceVote(MinecraftServer server, VoteSession session, UUID voter, VoteType type) {
+        if (Config.CHAT_MESSAGES.get() != Config.ChatMessages.ALL) return;
+
         Component itemsComponent = itemsComponent(session);
         Component name = Component.literal(session.getName(voter));
         Component message;
@@ -187,6 +224,8 @@ public class VoteManager {
 
     /** A participant who leaves before voting passes, so the vote doesn't wait for them. */
     public static void onPlayerQuit(ServerPlayer player) {
+        if (!Config.PASS_ON_DISCONNECT.get()) return;
+
         UUID id = player.getUUID();
         for (VoteSession session : activeVotes.values()) {
             if (session.isParticipant(id) && !session.hasVoted(id)) {
@@ -228,10 +267,8 @@ public class VoteManager {
     private static void dropItemsToWorld(MinecraftServer server, VoteSession session) {
         ServerLevel level = server.getLevel(session.getDimension());
         if (level == null) level = server.overworld();
-        Vec3 pos = session.getSourcePos();
         for (ItemStack stack : session.getItems()) {
-            ItemEntity drop = new ItemEntity(level, pos.x, pos.y + 0.5, pos.z, stack.copy());
-            level.addFreshEntity(drop);
+            LootDropHandler.dropInWorld(level, session.getSourcePos(), stack);
         }
     }
 

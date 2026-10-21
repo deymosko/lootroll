@@ -22,5 +22,6 @@
   "lootroll.vote.type.pass": "Відмова",
   "lootroll.vote.tie": "Нічия! Перекидання: %s",
   "lootroll.vote.not_participant": "Ви не берете участі в цьому голосуванні",
-  "lootroll.vote.offline_delivered": "Ви отримали здобич, виграну поки ви були офлайн: %s"
+  "lootroll.vote.offline_delivered": "Ви отримали здобич, виграну поки ви були офлайн: %s",
+  "lootroll.command.cooldown": "Зачекайте %s с перед наступним голосуванням"
 }

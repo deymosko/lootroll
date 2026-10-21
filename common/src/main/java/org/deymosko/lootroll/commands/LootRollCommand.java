@@ -15,11 +15,18 @@ import org.deymosko.lootroll.events.VoteSession;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class LootRollCommand {
+    // Player -> server tick when /startvote was last used.
+    private static final Map<UUID, Integer> lastUse = new HashMap<>();
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("startvote")
+                .requires(src -> src.hasPermission(Config.STARTVOTE_PERMISSION_LEVEL.get()))
                 .executes(ctx -> createLootRoll(ctx.getSource(), -1))
                 .then(Commands.argument("count", IntegerArgumentType.integer(1))
                         .executes(ctx -> {
@@ -33,6 +40,15 @@ public class LootRollCommand {
         ServerPlayer player = source.getPlayer();
         if (player == null) {
             source.sendFailure(Component.translatable("lootroll.command.players_only"));
+            return 0;
+        }
+
+        int cooldownTicks = Config.STARTVOTE_COOLDOWN.get() * 20;
+        int now = source.getServer().getTickCount();
+        Integer last = lastUse.get(player.getUUID());
+        if (cooldownTicks > 0 && last != null && now - last < cooldownTicks) {
+            int secondsLeft = (cooldownTicks - (now - last) + 19) / 20;
+            source.sendFailure(Component.translatable("lootroll.command.cooldown", secondsLeft));
             return 0;
         }
 
@@ -55,6 +71,7 @@ public class LootRollCommand {
         VoteSession session = new VoteSession(Collections.singletonList(prize), participants, Config.VOTE_DURATION.get(),
                 player.getUUID(), player.position(), player.serverLevel());
         VoteManager.startSession(session, source.getServer());
+        lastUse.put(player.getUUID(), now);
 
         return Command.SINGLE_SUCCESS;
     }

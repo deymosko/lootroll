@@ -23,5 +23,6 @@
   "lootroll.vote.type.pass": "pass",
   "lootroll.vote.tie": "Tie! Reroll: %s",
   "lootroll.vote.not_participant": "You are not taking part in this vote",
-  "lootroll.vote.offline_delivered": "You received loot won while you were offline: %s"
+  "lootroll.vote.offline_delivered": "You received loot won while you were offline: %s",
+  "lootroll.command.cooldown": "Please wait %s s before starting another vote"
 }

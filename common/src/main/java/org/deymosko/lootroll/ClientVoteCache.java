@@ -7,7 +7,7 @@ import java.util.*;
 public class ClientVoteCache {
 
     /** endTime is in the client's own clock (System.currentTimeMillis). */
-    public record VoteData(List<ItemStack> items, long endTime, long durationMs) {
+    public record VoteData(List<ItemStack> items, long endTime, long durationMs, boolean allowGreed) {
         public float progress() {
             if (durationMs <= 0) return 0.0f;
             return Math.max(0.0f, Math.min(1.0f, (endTime - System.currentTimeMillis()) / (float) durationMs));
@@ -23,9 +23,9 @@ public class ClientVoteCache {
 
     private static final Map<UUID, VoteData> voteQueue = new LinkedHashMap<>();
 
-    public static void add(UUID id, List<ItemStack> items, int durationTicks, int remainingTicks) {
+    public static void add(UUID id, List<ItemStack> items, int durationTicks, int remainingTicks, boolean allowGreed) {
         long now = System.currentTimeMillis();
-        voteQueue.putIfAbsent(id, new VoteData(items, now + remainingTicks * 50L, durationTicks * 50L));
+        voteQueue.putIfAbsent(id, new VoteData(items, now + remainingTicks * 50L, durationTicks * 50L, allowGreed));
     }
 
     public static void remove(UUID id) {
