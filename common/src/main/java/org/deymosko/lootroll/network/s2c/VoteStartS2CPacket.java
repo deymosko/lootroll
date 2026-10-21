@@ -4,6 +4,7 @@ import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.ClientVoteCache;
+import org.deymosko.lootroll.network.Packets;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,36 +15,43 @@ import java.util.UUID;
 public class VoteStartS2CPacket {
     private final UUID voteId;
     private final List<ItemStack> items;
-    private final long endTime;
+    private final int durationTicks;
+    private final int remainingTicks;
 
-    public VoteStartS2CPacket(UUID voteId, List<ItemStack> items, long endTime) {
+    // Durations are sent instead of a timestamp, so client and server clocks don't have to agree.
+    public VoteStartS2CPacket(UUID voteId, List<ItemStack> items, int durationTicks, int remainingTicks) {
         this.voteId = voteId;
         this.items = items;
-        this.endTime = endTime;
+        this.durationTicks = durationTicks;
+        this.remainingTicks = remainingTicks;
     }
 
     public static void encode(VoteStartS2CPacket msg, FriendlyByteBuf buf) {
+        buf.writeVarInt(Packets.PROTOCOL_VERSION);
         buf.writeUUID(msg.voteId);
-        buf.writeInt(msg.items.size());
+        buf.writeVarInt(msg.items.size());
         for (ItemStack stack : msg.items) {
             buf.writeItem(stack);
         }
-        buf.writeLong(msg.endTime);
+        buf.writeVarInt(msg.durationTicks);
+        buf.writeVarInt(msg.remainingTicks);
     }
 
     public static VoteStartS2CPacket decode(FriendlyByteBuf buf) {
         UUID voteId = buf.readUUID();
-        int size = buf.readInt();
+        int size = buf.readVarInt();
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             items.add(buf.readItem());
         }
-        long endTime = buf.readLong();
-        return new VoteStartS2CPacket(voteId, items, endTime);
+        int durationTicks = buf.readVarInt();
+        int remainingTicks = buf.readVarInt();
+        return new VoteStartS2CPacket(voteId, items, durationTicks, remainingTicks);
     }
 
     public static void handle(FriendlyByteBuf buf, NetworkManager.PacketContext ctx) {
+        if (!Packets.checkProtocol(buf, Packets.VOTE_START)) return;
         VoteStartS2CPacket msg = decode(buf);
-        ctx.queue(() -> ClientVoteCache.add(msg.voteId, msg.items, msg.endTime));
+        ctx.queue(() -> ClientVoteCache.add(msg.voteId, msg.items, msg.durationTicks, msg.remainingTicks));
     }
 }

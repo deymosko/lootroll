@@ -6,7 +6,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import org.deymosko.lootroll.Config;
+import org.deymosko.lootroll.ClientVoteCache;
 import org.deymosko.lootroll.enums.VoteType;
 
 import java.util.List;
@@ -15,20 +15,17 @@ import java.util.UUID;
 public class VoteUIEntry {
     private final UUID voteId;
     private final List<ItemStack> items;
-    private final long endTime;
-    private int timerTicks;
+    private final ClientVoteCache.VoteData data;
     private HoverableImageButton needButton;
     private HoverableImageButton greedButton;
     private HoverableImageButton passButton;
     private int x;
     private int y;
-    private static int duration = Config.VOTE_DURATION.get();
 
-    public VoteUIEntry(UUID voteId, List<ItemStack> items, long endTime) {
+    public VoteUIEntry(UUID voteId, ClientVoteCache.VoteData data) {
         this.voteId = voteId;
-        this.items = items;
-        this.endTime = endTime;
-        this.timerTicks = (int)Math.ceil(Math.max(0, endTime - System.currentTimeMillis()) / 50.0);
+        this.items = data.items();
+        this.data = data;
     }
 
     private boolean isWithinScrollBounds(int y) {
@@ -84,8 +81,7 @@ public class VoteUIEntry {
     }
 
     public boolean tick() {
-        timerTicks = (int)Math.ceil(Math.max(0, endTime - System.currentTimeMillis()) / 50.0);
-        return timerTicks <= 0;
+        return data.isExpired();
     }
 
     public void render(GuiGraphics gui, int mouseX, int mouseY, Font font, float partialTick) {
@@ -116,8 +112,7 @@ public class VoteUIEntry {
             gui.renderTooltip(font, stack, mouseX, mouseY);
         }
         LootVoteScreen.drawScaledWrappedString(gui, font, stack.getDisplayName(), x + 33, y + 9, 0.7f, 0xFFFFFF, 80);
-        float progress = timerTicks / (float)(duration*20);
-        drawProgressBar(gui, progress, x + 6, y + 33, 104, 5);
+        drawProgressBar(gui, data.progress(), x + 6, y + 33, 104, 5);
 
         if (needButton.isMouseOver(mouseX, mouseY)) {
             gui.renderTooltip(font, Component.translatable("lootroll.gui.vote.need"), mouseX, mouseY);

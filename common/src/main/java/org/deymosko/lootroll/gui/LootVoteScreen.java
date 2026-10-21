@@ -52,7 +52,7 @@ public class LootVoteScreen extends Screen {
         for (UUID id : ClientVoteCache.getPendingVotes()) {
             ClientVoteCache.VoteData data = ClientVoteCache.get(id);
             if (data != null) {
-                VoteUIEntry entry = new VoteUIEntry(id, data.items(), data.endTime());
+                VoteUIEntry entry = new VoteUIEntry(id, data);
                 entries.add(entry);
             }
         }
@@ -135,14 +135,15 @@ public class LootVoteScreen extends Screen {
 
     @Override
     public void tick() {
-        List<VoteUIEntry> expired = new ArrayList<>();
-        for (VoteUIEntry entry : entries) {
-            if (entry.tick()) {
-                expired.add(entry);
-            }
+        // Expired votes are resolved by the server; just drop them here.
+        entries.removeIf(VoteUIEntry::tick);
+        // Pick up votes that started or ended while the screen was open.
+        List<UUID> shown = entries.stream().map(VoteUIEntry::getVoteId).toList();
+        if (!shown.equals(List.copyOf(ClientVoteCache.getPendingVotes()))) {
+            reloadEntries();
         }
-        for (VoteUIEntry e : expired) {
-            vote(e.getVoteId(), VoteType.PASS);
+        if (entries.isEmpty()) {
+            Minecraft.getInstance().setScreen(null);
         }
     }
 

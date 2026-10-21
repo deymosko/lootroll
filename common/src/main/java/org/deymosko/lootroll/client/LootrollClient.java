@@ -1,6 +1,7 @@
 package org.deymosko.lootroll.client;
 
 import dev.architectury.event.events.client.ClientGuiEvent;
+import dev.architectury.event.events.client.ClientPlayerEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 import org.deymosko.lootroll.ClientVoteCache;
@@ -21,11 +22,14 @@ public final class LootrollClient {
 
         ClientTickEvent.CLIENT_POST.register(LootrollClient::onClientTick);
         ClientGuiEvent.RENDER_HUD.register(VoteHUDOverlay::render);
+        ClientPlayerEvent.CLIENT_PLAYER_QUIT.register(player -> ClientVoteCache.clear());
     }
 
     private static void onClientTick(Minecraft mc)
     {
         if (mc.player == null || mc.level == null) return;
+
+        ClientVoteCache.removeExpired();
 
         while (Keybinds.openVoteMenu.consumeClick()) {
             if (ClientVoteCache.hasVote()) {

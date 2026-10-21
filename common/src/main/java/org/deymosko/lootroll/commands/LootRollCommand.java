@@ -6,24 +6,18 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.deymosko.lootroll.Config;
+import org.deymosko.lootroll.events.Participants;
 import org.deymosko.lootroll.events.VoteManager;
 import org.deymosko.lootroll.events.VoteSession;
-import org.deymosko.lootroll.network.Packets;
-import org.deymosko.lootroll.network.s2c.VoteStartS2CPacket;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class LootRollCommand {
-    private static final int radius = Config.VOTE_RADIUS.get();
-    private static final int duration = Config.VOTE_DURATION.get();
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("startvote")
                 .executes(ctx -> createLootRoll(ctx.getSource(), -1))
@@ -36,10 +30,8 @@ public class LootRollCommand {
     }
 
     private static int createLootRoll(CommandSourceStack source, int count) {
-        ServerPlayer player;
-        try {
-            player = source.getPlayerOrException();
-        } catch (Exception e) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
             source.sendFailure(Component.translatable("lootroll.command.players_only"));
             return 0;
         }
@@ -53,22 +45,16 @@ public class LootRollCommand {
         int amount = count <= 0 ? stack.getCount() : Math.min(count, stack.getCount());
         ItemStack prize = stack.split(amount);
 
-        ServerLevel level = player.serverLevel();
-        TargetingConditions conditions = TargetingConditions.forNonCombat();
-        List<Player> nearby = level.getNearbyPlayers(conditions, player, player.getBoundingBox().inflate(radius));
-        List<ServerPlayer> participants = new ArrayList<>();
-        participants.add(player);
-        for (Player p : nearby) {
-            if (p instanceof ServerPlayer sp) {
-                participants.add(sp);
-            }
+        // Read config on every use so /reload-ed or edited values apply without a restart.
+        List<ServerPlayer> participants = Participants.around(player.serverLevel(), player.position(), Config.VOTE_RADIUS.get());
+        if (!participants.contains(player)) {
+            participants = new ArrayList<>(participants);
+            participants.add(0, player);
         }
 
-        VoteSession session = new VoteSession(Collections.singletonList(prize), participants, duration, player.getUUID(), player.position(), player.serverLevel());
-        VoteManager.addSession(session);
-        for (ServerPlayer p : participants) {
-            Packets.sendToClient(new VoteStartS2CPacket(session.getId(), session.getItems(), session.getEndTime()), p);
-        }
+        VoteSession session = new VoteSession(Collections.singletonList(prize), participants, Config.VOTE_DURATION.get(),
+                player.getUUID(), player.position(), player.serverLevel());
+        VoteManager.startSession(session, source.getServer());
 
         return Command.SINGLE_SUCCESS;
     }

@@ -11,6 +11,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import org.deymosko.lootroll.Config;
 import org.deymosko.lootroll.LootDropHandler;
 import org.deymosko.lootroll.forge.mixin.LivingEntityAccessor;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,6 +30,7 @@ public abstract class EntityChaosSpawnerMixin {
 
     @Inject(method = "tickDeath", at = @At("HEAD"), cancellable = true)
     private void lootroll$onTickDeath(CallbackInfo ci) {
+        if (!Config.CHAOS_SPAWNER_INT.get()) return;
         ChaosSpawnerEntity self = (ChaosSpawnerEntity) (Object) this;
         lootroll$deathTime++;
 

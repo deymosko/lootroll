@@ -16,7 +16,6 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class RollCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -43,14 +42,12 @@ public class RollCommand {
     }
 
     private static int roll(CommandSourceStack source, int min, int max) {
-        Random rand = new Random();
-
         if (min > max) {
             source.sendFailure(Component.translatable("lootroll.roll.invalid_range"));
             return 0;
         }
 
-        int rollRes = rand.nextInt(max - min + 1) + min;
+        int rollRes = source.getLevel().getRandom().nextIntBetweenInclusive(min, max);
         ServerPlayer sender;
         try {
             sender = source.getPlayerOrException();

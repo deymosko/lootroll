@@ -5,6 +5,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import org.deymosko.lootroll.events.VoteManager;
 import org.deymosko.lootroll.enums.VoteType;
+import org.deymosko.lootroll.network.Packets;
 
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ public class VoteC2SPacket {
     }
 
     public static void encode(VoteC2SPacket msg, FriendlyByteBuf buf) {
+        buf.writeVarInt(Packets.PROTOCOL_VERSION);
         buf.writeUUID(msg.voteId);
         buf.writeEnum(msg.type);
     }
@@ -27,6 +29,7 @@ public class VoteC2SPacket {
     }
 
     public static void handle(FriendlyByteBuf buf, NetworkManager.PacketContext ctx) {
+        if (!Packets.checkProtocol(buf, Packets.VOTE)) return;
         VoteC2SPacket msg = decode(buf);
         ctx.queue(() -> {
             if (ctx.getPlayer() instanceof ServerPlayer player) {

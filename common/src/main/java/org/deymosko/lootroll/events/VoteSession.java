@@ -1,87 +1,130 @@
 package org.deymosko.lootroll.events;
 
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.deymosko.lootroll.Config;
 import org.deymosko.lootroll.enums.VoteType;
 
 import java.util.*;
 
 public class VoteSession {
-    private final UUID sessionId;
+    public static final int ROLL_MIN = 1;
+    public static final int ROLL_MAX = 100;
+
+    private final UUID sessionId = UUID.randomUUID();
     private final List<ItemStack> items;
-    private final List<ServerPlayer> participants;
-    private final Map<UUID, VoteType> votes = new HashMap<>();
-    private final UUID initiatorId;
+    // Stored by UUID so a player who relogs mid-vote is still the same participant.
+    private final Map<UUID, String> participants = new LinkedHashMap<>();
+    private final Map<UUID, VoteType> votes = new LinkedHashMap<>();
     private final Map<UUID, Integer> rolls = new HashMap<>();
-    private final long endTime;
+    // One map per extra round rolled to break a tie between the top rollers.
+    private final List<Map<UUID, Integer>> tieBreaks = new ArrayList<>();
+    private final UUID initiatorId;
+    private final int durationTicks;
+    private int remainingTicks;
     private final Vec3 sourcePos;
-    private final ServerLevel world;
-    private final int voteRadius = Config.VOTE_RADIUS.get();
+    private final ResourceKey<Level> dimension;
+    private final RandomSource random;
+    private Optional<UUID> winner;
 
-
-    public VoteSession(List<ItemStack> items, List<ServerPlayer> participants, int durationSeconds, Vec3 sourcePos, ServerLevel world) {
+    public VoteSession(List<ItemStack> items, List<ServerPlayer> participants, int durationSeconds, Vec3 sourcePos, Level world) {
         this(items, participants, durationSeconds, null, sourcePos, world);
     }
-    public VoteSession(List<ItemStack> items, List<ServerPlayer> participants, int durationSeconds, UUID initiatorId, Vec3 sourcePos, ServerLevel world) {
-        this.world = world;
-        this.sessionId = UUID.randomUUID();
+
+    public VoteSession(List<ItemStack> items, List<ServerPlayer> participants, int durationSeconds, UUID initiatorId, Vec3 sourcePos, Level world) {
         this.items = items.stream().map(ItemStack::copy).toList();
-        this.participants = new ArrayList<>(participants);
+        for (ServerPlayer p : participants) {
+            this.participants.put(p.getUUID(), p.getGameProfile().getName());
+        }
         this.initiatorId = initiatorId;
-        this.endTime = System.currentTimeMillis() + durationSeconds * 1000L;
+        this.durationTicks = Math.max(1, durationSeconds * 20);
+        this.remainingTicks = this.durationTicks;
         this.sourcePos = sourcePos;
+        this.dimension = world.dimension();
+        this.random = world.getRandom();
     }
+
     public UUID getInitiatorId() {
         return initiatorId;
     }
+
     public List<ItemStack> getItems() {
         return items;
     }
 
-
     public UUID getId() {
         return sessionId;
     }
-    public ServerLevel getWorld()
-    {
-        return world;
+
+    public ResourceKey<Level> getDimension() {
+        return dimension;
     }
 
-    public List<ServerPlayer> getParticipants() {
-        return participants;
+    public Set<UUID> getParticipants() {
+        return Collections.unmodifiableSet(participants.keySet());
     }
 
-    public void vote(UUID playerId, VoteType vote) {
-        if (!votes.containsKey(playerId)) {
-            votes.put(playerId, vote);
-            if (vote == VoteType.NEED || vote == VoteType.GREED) {
-                int roll = new Random().nextInt(100) + 1;
-                System.out.println(playerId + ": " + roll);
-                rolls.put(playerId, roll);
-            }
+    public boolean isParticipant(UUID playerId) {
+        return participants.containsKey(playerId);
+    }
+
+    public String getName(UUID playerId) {
+        return participants.getOrDefault(playerId, playerId.toString());
+    }
+
+    public boolean hasVoted(UUID playerId) {
+        return votes.containsKey(playerId);
+    }
+
+    /** @return false if the player isn't a participant or has already voted. */
+    public boolean vote(UUID playerId, VoteType vote) {
+        if (!isParticipant(playerId) || votes.containsKey(playerId) || winner != null) return false;
+
+        votes.put(playerId, vote);
+        if (vote == VoteType.NEED || vote == VoteType.GREED) {
+            rolls.put(playerId, roll());
         }
+        return true;
+    }
+
+    private int roll() {
+        return random.nextIntBetweenInclusive(ROLL_MIN, ROLL_MAX);
+    }
+
+    public void tick() {
+        if (remainingTicks > 0) remainingTicks--;
+    }
+
+    /** Ends the vote early, e.g. when the server is stopping. */
+    public void expire() {
+        remainingTicks = 0;
     }
 
     public boolean isFinished() {
-        return System.currentTimeMillis() >= endTime || votes.size() >= participants.size();
+        return remainingTicks <= 0 || votes.size() >= participants.size();
     }
 
+    /** Resolved once; later calls return the same winner. */
     public Optional<UUID> getWinner() {
-        List<UUID> needers = getVoters(VoteType.NEED);
-        List<UUID> greeders = getVoters(VoteType.GREED);
+        if (winner == null) {
+            List<UUID> needers = getVoters(VoteType.NEED);
+            List<UUID> greeders = getVoters(VoteType.GREED);
 
-        if (!needers.isEmpty()) {
-            return getTopRoll(needers);
-        } else if (!greeders.isEmpty()) {
-            return getTopRoll(greeders);
+            if (!needers.isEmpty()) {
+                winner = getTopRoll(needers);
+            } else if (!greeders.isEmpty()) {
+                winner = getTopRoll(greeders);
+            } else {
+                winner = Optional.empty();
+            }
         }
-        return Optional.empty();
+        return winner;
     }
 
-    private List<UUID> getVoters(VoteType type) {
+    public List<UUID> getVoters(VoteType type) {
         List<UUID> result = new ArrayList<>();
         for (Map.Entry<UUID, VoteType> entry : votes.entrySet()) {
             if (entry.getValue() == type) {
@@ -92,35 +135,23 @@ public class VoteSession {
     }
 
     private Optional<UUID> getTopRoll(List<UUID> group) {
-
-        List<UUID> contenders = new ArrayList<>(group);
-        Random random = new Random();
+        List<UUID> contenders = topOf(group, rolls);
 
         while (contenders.size() > 1) {
-            int maxRoll = contenders.stream()
-                    .mapToInt(rolls::get)
-                    .max()
-                    .orElse(-1);
-
-            List<UUID> top = new ArrayList<>();
+            Map<UUID, Integer> round = new LinkedHashMap<>();
             for (UUID id : contenders) {
-                if (rolls.get(id) == maxRoll) {
-                    top.add(id);
-                }
+                round.put(id, roll());
             }
-
-            if (top.size() == 1) {
-                return Optional.of(top.get(0));
-            }
-
-            for (UUID id : top) {
-                int roll = random.nextInt(100) + 1;
-                rolls.put(id, roll);
-            }
-            contenders = new ArrayList<>(top);
+            tieBreaks.add(round);
+            contenders = topOf(contenders, round);
         }
 
         return contenders.isEmpty() ? Optional.empty() : Optional.of(contenders.get(0));
+    }
+
+    private static List<UUID> topOf(List<UUID> group, Map<UUID, Integer> scores) {
+        int max = group.stream().mapToInt(id -> scores.getOrDefault(id, 0)).max().orElse(-1);
+        return group.stream().filter(id -> scores.getOrDefault(id, 0) == max).toList();
     }
 
     public Map<UUID, VoteType> getVotes() {
@@ -131,16 +162,19 @@ public class VoteSession {
         return rolls;
     }
 
-    public long getTimeLeftMs() {
-        return Math.max(0, endTime - System.currentTimeMillis());
+    public List<Map<UUID, Integer>> getTieBreaks() {
+        return tieBreaks;
     }
 
-    public long getEndTime() {
-        return endTime;
+    public int getDurationTicks() {
+        return durationTicks;
+    }
+
+    public int getRemainingTicks() {
+        return remainingTicks;
     }
 
     public Vec3 getSourcePos() {
         return sourcePos;
     }
 }
-
