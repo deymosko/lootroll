@@ -13,6 +13,14 @@ loom {
     }
 }
 
+repositories {
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+}
+
 configurations {
     common {
         canBeResolved = true
@@ -35,13 +43,12 @@ dependencies {
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionForge')
 
-    // Optional integrations (Forge-only mods). Dev jars with Mojang names, used only at compile time.
-    compileOnly files(
-            "$rootDir/libs/output.jar",
-            "$rootDir/libs/citadel-2.6.2-1.20.1.jar",
-            "$rootDir/libs/alexscaves-2.0.2-unobf.jar",
-            "$rootDir/libs/Dungeon Now Loading-forge-1.20.1-2.0-unobf.jar"
-    )
+    // Optional integrations: compile-time only, never required at runtime
+    // (IntegrationMixinPlugin skips their mixins when the mod isn't installed).
+    modCompileOnly "maven.modrinth:ice-and-fire-dragons:$rootProject.iceandfire_version"
+    modCompileOnly "maven.modrinth:citadel:$rootProject.citadel_version"
+    modCompileOnly "maven.modrinth:alexs-caves:$rootProject.alexscaves_version"
+    modCompileOnly "maven.modrinth:dungeon-now-loading:$rootProject.dungeonnowloading_version"
 }
 
 processResources {
