@@ -1,5 +1,6 @@
 package org.deymosko.lootroll.events;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -16,7 +17,7 @@ public class PendingLoot extends SavedData {
     private final Map<UUID, List<ItemStack>> pending = new HashMap<>();
 
     public static PendingLoot get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(PendingLoot::load, PendingLoot::new, NAME);
+        return server.overworld().getDataStorage().computeIfAbsent(new SavedData.Factory<>(PendingLoot::new, PendingLoot::load, null), NAME);
     }
 
     public void add(UUID playerId, List<ItemStack> items) {
@@ -36,14 +37,14 @@ public class PendingLoot extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         ListTag players = new ListTag();
         pending.forEach((id, items) -> {
             CompoundTag entry = new CompoundTag();
             entry.putUUID("Player", id);
             ListTag stacks = new ListTag();
             for (ItemStack stack : items) {
-                stacks.add(stack.save(new CompoundTag()));
+                if (!stack.isEmpty()) stacks.add(stack.save(registries));
             }
             entry.put("Items", stacks);
             players.add(entry);
@@ -52,7 +53,7 @@ public class PendingLoot extends SavedData {
         return tag;
     }
 
-    private static PendingLoot load(CompoundTag tag) {
+    private static PendingLoot load(CompoundTag tag, HolderLookup.Provider registries) {
         PendingLoot data = new PendingLoot();
         ListTag players = tag.getList("Players", Tag.TAG_COMPOUND);
         for (int i = 0; i < players.size(); i++) {
@@ -60,8 +61,7 @@ public class PendingLoot extends SavedData {
             ListTag stacks = entry.getList("Items", Tag.TAG_COMPOUND);
             List<ItemStack> items = new ArrayList<>();
             for (int j = 0; j < stacks.size(); j++) {
-                ItemStack stack = ItemStack.of(stacks.getCompound(j));
-                if (!stack.isEmpty()) items.add(stack);
+                ItemStack.parse(registries, stacks.getCompound(j)).ifPresent(items::add);
             }
             if (!items.isEmpty()) data.pending.put(entry.getUUID("Player"), items);
         }

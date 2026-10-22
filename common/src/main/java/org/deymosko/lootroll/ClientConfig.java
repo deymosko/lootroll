@@ -1,26 +1,26 @@
 package org.deymosko.lootroll;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 /** Per-player UI settings (lootroll-client.toml). */
 public class ClientConfig
 {
     public enum Anchor { TOP_LEFT, TOP_CENTER, TOP_RIGHT, CENTER_LEFT, CENTER_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT }
 
-    public static final ForgeConfigSpec CONFIG;
+    public static final ModConfigSpec CONFIG;
 
-    public static final ForgeConfigSpec.BooleanValue HUD_ENABLED;
-    public static final ForgeConfigSpec.EnumValue<Anchor> HUD_ANCHOR;
-    public static final ForgeConfigSpec.IntValue HUD_OFFSET_X;
-    public static final ForgeConfigSpec.IntValue HUD_OFFSET_Y;
-    public static final ForgeConfigSpec.IntValue HUD_MAX_FRAMES;
+    public static final ModConfigSpec.BooleanValue HUD_ENABLED;
+    public static final ModConfigSpec.EnumValue<Anchor> HUD_ANCHOR;
+    public static final ModConfigSpec.IntValue HUD_OFFSET_X;
+    public static final ModConfigSpec.IntValue HUD_OFFSET_Y;
+    public static final ModConfigSpec.IntValue HUD_MAX_FRAMES;
 
-    public static final ForgeConfigSpec.BooleanValue PLAY_SOUND;
-    public static final ForgeConfigSpec.BooleanValue OPEN_SCREEN_ON_VOTE;
-    public static final ForgeConfigSpec.BooleanValue WIN_TOAST;
+    public static final ModConfigSpec.BooleanValue PLAY_SOUND;
+    public static final ModConfigSpec.BooleanValue OPEN_SCREEN_ON_VOTE;
+    public static final ModConfigSpec.BooleanValue WIN_TOAST;
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.push("hud");
         HUD_ENABLED = builder

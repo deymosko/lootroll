@@ -2,6 +2,7 @@ package org.deymosko.lootroll.gui;
 
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -24,7 +25,7 @@ public class VoteHUDOverlay {
     private static final int GAP = 2;
     private static final int EDGE = 4;
 
-    public static void render(GuiGraphics gui, float partialTick) {
+    public static void render(GuiGraphics gui, DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         if (!ClientConfig.HUD_ENABLED.get() || !ClientVoteCache.hasVote()) return;
         if (mc.level == null || mc.options.hideGui || mc.screen instanceof LootVoteScreen) return;

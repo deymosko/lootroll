@@ -1,5 +1,6 @@
 package org.deymosko.lootroll.fabric.mixin;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -30,14 +31,14 @@ public abstract class LivingEntityMixin implements DropCaptureHolder {
     }
 
     @Inject(method = "dropAllDeathLoot", at = @At("HEAD"))
-    private void lootroll$startCapture(DamageSource source, CallbackInfo ci) {
+    private void lootroll$startCapture(ServerLevel level, DamageSource source, CallbackInfo ci) {
         if (LootDropHandler.isTracked((LivingEntity) (Object) this)) {
             lootroll$capturedDrops = new ArrayList<>();
         }
     }
 
     @Inject(method = "dropAllDeathLoot", at = @At("RETURN"))
-    private void lootroll$finishCapture(DamageSource source, CallbackInfo ci) {
+    private void lootroll$finishCapture(ServerLevel level, DamageSource source, CallbackInfo ci) {
         List<ItemStack> drops = lootroll$capturedDrops;
         lootroll$capturedDrops = null;
         if (drops != null && !drops.isEmpty()) {

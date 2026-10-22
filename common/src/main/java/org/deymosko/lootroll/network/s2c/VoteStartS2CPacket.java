@@ -1,61 +1,40 @@
 package org.deymosko.lootroll.network.s2c;
 
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.deymosko.lootroll.Lootroll;
 import org.deymosko.lootroll.client.LootrollClient;
-import org.deymosko.lootroll.network.Packets;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+// Durations are sent instead of a timestamp, so client and server clocks don't have to agree.
+public record VoteStartS2CPacket(UUID voteId, List<ItemStack> items, int durationTicks, int remainingTicks, boolean allowGreed)
+        implements CustomPacketPayload {
 
+    public static final Type<VoteStartS2CPacket> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(Lootroll.MODID, "vote_start"));
 
-public class VoteStartS2CPacket {
-    private final UUID voteId;
-    private final List<ItemStack> items;
-    private final int durationTicks;
-    private final int remainingTicks;
-    private final boolean allowGreed;
+    public static final StreamCodec<RegistryFriendlyByteBuf, VoteStartS2CPacket> CODEC = StreamCodec.composite(
+            UUIDUtil.STREAM_CODEC, VoteStartS2CPacket::voteId,
+            ItemStack.LIST_STREAM_CODEC, VoteStartS2CPacket::items,
+            ByteBufCodecs.VAR_INT, VoteStartS2CPacket::durationTicks,
+            ByteBufCodecs.VAR_INT, VoteStartS2CPacket::remainingTicks,
+            ByteBufCodecs.BOOL, VoteStartS2CPacket::allowGreed,
+            VoteStartS2CPacket::new);
 
-    // Durations are sent instead of a timestamp, so client and server clocks don't have to agree.
-    public VoteStartS2CPacket(UUID voteId, List<ItemStack> items, int durationTicks, int remainingTicks, boolean allowGreed) {
-        this.voteId = voteId;
-        this.items = items;
-        this.durationTicks = durationTicks;
-        this.remainingTicks = remainingTicks;
-        this.allowGreed = allowGreed;
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
-    public static void encode(VoteStartS2CPacket msg, FriendlyByteBuf buf) {
-        buf.writeVarInt(Packets.PROTOCOL_VERSION);
-        buf.writeUUID(msg.voteId);
-        buf.writeVarInt(msg.items.size());
-        for (ItemStack stack : msg.items) {
-            buf.writeItem(stack);
-        }
-        buf.writeVarInt(msg.durationTicks);
-        buf.writeVarInt(msg.remainingTicks);
-        buf.writeBoolean(msg.allowGreed);
-    }
-
-    public static VoteStartS2CPacket decode(FriendlyByteBuf buf) {
-        UUID voteId = buf.readUUID();
-        int size = buf.readVarInt();
-        List<ItemStack> items = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            items.add(buf.readItem());
-        }
-        int durationTicks = buf.readVarInt();
-        int remainingTicks = buf.readVarInt();
-        boolean allowGreed = buf.readBoolean();
-        return new VoteStartS2CPacket(voteId, items, durationTicks, remainingTicks, allowGreed);
-    }
-
-    public static void handle(FriendlyByteBuf buf, NetworkManager.PacketContext ctx) {
-        if (!Packets.checkProtocol(buf, Packets.VOTE_START)) return;
-        VoteStartS2CPacket msg = decode(buf);
+    public static void handle(VoteStartS2CPacket msg, NetworkManager.PacketContext ctx) {
         ctx.queue(() -> LootrollClient.onVoteStart(msg.voteId, msg.items, msg.durationTicks, msg.remainingTicks, msg.allowGreed));
     }
 }

@@ -1,7 +1,7 @@
-# LootRoll 1.1.0
+# LootRoll 1.1.0 (Minecraft 1.21.1)
 
 ## ✨ New
-- **Fabric support!** LootRoll now runs on both Forge and Fabric (1.20.1).
+- **Minecraft 1.21.1 support** on **NeoForge** and **Fabric**.
   Requires Architectury API (+ Fabric API and Forge Config API Port on Fabric).
 - **New roll notifications:** WoW-style roll frames on the HUD with item icon,
   rarity colour and timer bar.
@@ -39,8 +39,9 @@
 - "Active loot vote" alert could stay on screen forever.
 - Players behind walls or pillars were excluded from votes.
 - Players outside the vote could cast votes.
-- Chaos Spawner integration ignored its config toggle.
 - Vote type in chat wasn't translated; item count in results wasn't shown.
 
 ## ⚠️ Notes
 - Client and server must both run 1.1.0 (not compatible with 1.0.x).
+- The Ice and Fire / Alex's Caves / Dungeon Now Loading integrations are 1.20.1-only;
+  on 1.21.1 boss loot is handled by the generic capture.
