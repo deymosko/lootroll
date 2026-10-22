@@ -104,7 +104,7 @@ public class LootDropHandler {
             ItemStack rest = stack.copy();
             for (ItemStack target : merged) {
                 if (rest.isEmpty()) break;
-                if (ItemStack.isSameItemSameTags(target, rest) && target.getCount() < target.getMaxStackSize()) {
+                if (ItemStack.isSameItemSameComponents(target, rest) && target.getCount() < target.getMaxStackSize()) {
                     int moved = Math.min(rest.getCount(), target.getMaxStackSize() - target.getCount());
                     target.grow(moved);
                     rest.shrink(moved);

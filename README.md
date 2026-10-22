@@ -1,6 +1,6 @@
 # 🎲 LootRoll
 
-A Minecraft mod (1.20.1, **Forge and Fabric**) that adds a **Need / Greed / Pass** loot roll system inspired by classic MMORPGs like WoW or FFXIV.
+A Minecraft mod (1.21.1, **NeoForge and Fabric**; a 1.20.1 Forge/Fabric version lives on the `main` branch) that adds a **Need / Greed / Pass** loot roll system inspired by classic MMORPGs like WoW or FFXIV.
 
 ---
 
@@ -22,7 +22,7 @@ A Minecraft mod (1.20.1, **Forge and Fabric**) that adds a **Need / Greed / Pass
 
 Requires [Architectury API](https://modrinth.com/mod/architectury-api) on both loaders.
 
-**Forge:** Forge 47+ for 1.20.1, Architectury API.
+**NeoForge:** NeoForge 21.1+ for 1.21.1, Architectury API.
 **Fabric:** Fabric Loader, Fabric API, Architectury API, [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port).
 
 Install on the server **and** the clients for the full UI. With the mod only on the server, players vote through chat buttons.
@@ -90,11 +90,6 @@ chat_vote_buttons = "CLIENTS_WITHOUT_MOD"  # ALWAYS, CLIENTS_WITHOUT_MOD, NEVER
 startvote_permission_level = 0
 startvote_cooldown = 0
 roll_radius = 100
-
-[integrations]
-dragon_loot_voting = true    # Ice and Fire dragon corpses
-luxtructosaurus = true       # Alex's Caves
-chaos_spawner = true         # Dungeon Now Loading
 ```
 
 ### `config/lootroll-client.toml` (each player)
@@ -136,7 +131,7 @@ Each item in a vote is shown with buttons:
 ./gradlew build
 ```
 
-Jars end up in `forge/build/libs` and `fabric/build/libs`.
+Requires JDK 21. Jars end up in `neoforge/build/libs` and `fabric/build/libs`.
 
 ---
 

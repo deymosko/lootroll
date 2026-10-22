@@ -237,9 +237,9 @@ public class LootVoteScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (maxScroll() <= 0) return false;
-        targetScroll = Mth.clamp(targetScroll - delta * ROW / 2.0, 0, maxScroll());
+        targetScroll = Mth.clamp(targetScroll - scrollY * ROW / 2.0, 0, maxScroll());
         return true;
     }
 
@@ -250,7 +250,7 @@ public class LootVoteScreen extends Screen {
 
     // Keep the world visible behind the list.
     @Override
-    public void renderBackground(GuiGraphics guiGraphics) {}
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {}
 
     public static void drawScaledWrappedString(GuiGraphics guiGraphics, Font font, Component text,
                                                float screenX, float screenY, float scale,

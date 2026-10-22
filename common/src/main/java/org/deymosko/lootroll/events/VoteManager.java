@@ -29,7 +29,7 @@ public class VoteManager {
             name.append(" x" + stack.getCount());
         }
         return name.withStyle(style -> style
-                .withColor(stack.getRarity().color)
+                .withColor(stack.getRarity().color())
                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(stack.copy()))));
     }
 

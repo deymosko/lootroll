@@ -1,7 +1,7 @@
 package org.deymosko.lootroll;
 
 import net.minecraft.world.item.Rarity;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.List;
 
@@ -13,46 +13,41 @@ public class Config
     public enum VoteMode { PER_STACK, PER_ITEM, WHOLE_LOT }
     public enum ChatButtons { ALWAYS, CLIENTS_WITHOUT_MOD, NEVER }
 
-    public static final ForgeConfigSpec CONFIG;
+    public static final ModConfigSpec CONFIG;
 
     // loot
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> LOOT_ENTITIES;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ITEM_BLACKLIST;
-    public static final ForgeConfigSpec.EnumValue<Rarity> MIN_RARITY;
-    public static final ForgeConfigSpec.IntValue MIN_PLAYERS;
-    public static final ForgeConfigSpec.EnumValue<VoteMode> VOTE_MODE;
-    public static final ForgeConfigSpec.BooleanValue MERGE_STACKS;
-    public static final ForgeConfigSpec.BooleanValue CAPTURE_NEARBY_DROPS;
-    public static final ForgeConfigSpec.DoubleValue CAPTURE_RADIUS;
-    public static final ForgeConfigSpec.IntValue CAPTURE_WINDOW;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> LOOT_ENTITIES;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> ITEM_BLACKLIST;
+    public static final ModConfigSpec.EnumValue<Rarity> MIN_RARITY;
+    public static final ModConfigSpec.IntValue MIN_PLAYERS;
+    public static final ModConfigSpec.EnumValue<VoteMode> VOTE_MODE;
+    public static final ModConfigSpec.BooleanValue MERGE_STACKS;
+    public static final ModConfigSpec.BooleanValue CAPTURE_NEARBY_DROPS;
+    public static final ModConfigSpec.DoubleValue CAPTURE_RADIUS;
+    public static final ModConfigSpec.IntValue CAPTURE_WINDOW;
 
     // vote
-    public static final ForgeConfigSpec.ConfigValue<Integer> VOTE_DURATION;
-    public static final ForgeConfigSpec.ConfigValue<Integer> VOTE_RADIUS;
-    public static final ForgeConfigSpec.BooleanValue REQUIRE_LINE_OF_SIGHT;
-    public static final ForgeConfigSpec.BooleanValue INCLUDE_KILLER;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_GREED;
-    public static final ForgeConfigSpec.IntValue ROLL_MIN;
-    public static final ForgeConfigSpec.IntValue ROLL_MAX;
-    public static final ForgeConfigSpec.BooleanValue END_WHEN_ALL_VOTED;
-    public static final ForgeConfigSpec.BooleanValue PASS_ON_DISCONNECT;
-    public static final ForgeConfigSpec.EnumValue<NoWinnerAction> NO_WINNER_ACTION;
-    public static final ForgeConfigSpec.EnumValue<OfflineWinnerAction> OFFLINE_WINNER_ACTION;
-    public static final ForgeConfigSpec.EnumValue<ChatMessages> CHAT_MESSAGES;
-    public static final ForgeConfigSpec.EnumValue<ChatButtons> CHAT_VOTE_BUTTONS;
+    public static final ModConfigSpec.ConfigValue<Integer> VOTE_DURATION;
+    public static final ModConfigSpec.ConfigValue<Integer> VOTE_RADIUS;
+    public static final ModConfigSpec.BooleanValue REQUIRE_LINE_OF_SIGHT;
+    public static final ModConfigSpec.BooleanValue INCLUDE_KILLER;
+    public static final ModConfigSpec.BooleanValue ALLOW_GREED;
+    public static final ModConfigSpec.IntValue ROLL_MIN;
+    public static final ModConfigSpec.IntValue ROLL_MAX;
+    public static final ModConfigSpec.BooleanValue END_WHEN_ALL_VOTED;
+    public static final ModConfigSpec.BooleanValue PASS_ON_DISCONNECT;
+    public static final ModConfigSpec.EnumValue<NoWinnerAction> NO_WINNER_ACTION;
+    public static final ModConfigSpec.EnumValue<OfflineWinnerAction> OFFLINE_WINNER_ACTION;
+    public static final ModConfigSpec.EnumValue<ChatMessages> CHAT_MESSAGES;
+    public static final ModConfigSpec.EnumValue<ChatButtons> CHAT_VOTE_BUTTONS;
 
     // commands
-    public static final ForgeConfigSpec.IntValue STARTVOTE_PERMISSION_LEVEL;
-    public static final ForgeConfigSpec.IntValue STARTVOTE_COOLDOWN;
-    public static final ForgeConfigSpec.IntValue ROLL_COMMAND_RADIUS;
-
-    // integrations
-    public static final ForgeConfigSpec.ConfigValue<Boolean> ICE_AND_FIRE_INT;
-    public static final ForgeConfigSpec.ConfigValue<Boolean> ALEXS_CAVES_INT;
-    public static final ForgeConfigSpec.ConfigValue<Boolean> CHAOS_SPAWNER_INT;
+    public static final ModConfigSpec.IntValue STARTVOTE_PERMISSION_LEVEL;
+    public static final ModConfigSpec.IntValue STARTVOTE_COOLDOWN;
+    public static final ModConfigSpec.IntValue ROLL_COMMAND_RADIUS;
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.push("loot");
 
@@ -163,18 +158,6 @@ public class Config
         builder.pop();
 
 
-        builder.push("integrations");
-
-        ICE_AND_FIRE_INT = builder
-                .comment("Enable loot voting for Ice and Fire dragons")
-                .define("dragon_loot_voting", true);
-        ALEXS_CAVES_INT = builder
-                .comment("Enable loot voting for Luxtructosaurus(AlexsCaves)")
-                .define("luxtructosaurus", true);
-        CHAOS_SPAWNER_INT = builder
-                .comment("Enable loot voting for ChaosSpawner(DungeonNowLoading)")
-                .define("chaos_spawner", true);
-        builder.pop();
 
 
         CONFIG = builder.build();

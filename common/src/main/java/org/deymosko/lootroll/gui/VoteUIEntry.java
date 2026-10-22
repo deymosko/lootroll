@@ -96,7 +96,7 @@ public class VoteUIEntry {
             } else {
                 List<Component> lines = new ArrayList<>();
                 for (ItemStack s : items) {
-                    lines.add(Component.literal(s.getCount() + "x ").append(s.getHoverName()).withStyle(s.getRarity().color));
+                    lines.add(Component.literal(s.getCount() + "x ").append(s.getHoverName()).withStyle(s.getRarity().color()));
                 }
                 gui.renderComponentTooltip(font, lines, mouseX, mouseY);
             }
@@ -108,7 +108,7 @@ public class VoteUIEntry {
     }
 
     public static int rarityColor(ItemStack stack) {
-        Integer color = stack.getRarity().color.getColor();
+        Integer color = stack.getRarity().color().getColor();
         return color != null ? color : 0xFFFFFF;
     }
 
